@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import './style.css';
+import BenchmarkScene from './BenchmarkScene';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
 
@@ -56,7 +57,7 @@ class Boot extends Phaser.Scene {
   canvasTex(s,'scenery',WORLD,270,c=>drawScenery(c));
   canvasTex(s,'hall',400,190,c=>drawCityHall(c));
   canvasTex(s,'boss-sky',WORLD,270,c=>drawSky(c));
-  this.scene.start('Title');
+  this.scene.start(new URLSearchParams(location.search).has('benchmark')?'Benchmark':'Title');
  }
 }
 function drawSky(c:CanvasRenderingContext2D){
@@ -265,7 +266,7 @@ class Game extends Phaser.Scene {
  ambientFx(){if(this.health<=0||this.complete)return;const cx=this.cameras.main.scrollX;const x=cx+this.rand()*W;const s=this.add.rectangle(x,FLOOR-1,1,5+this.rand()*12,0xbec6b0,.18).setDepth(13);this.tweens.add({targets:s,y:s.y+14,alpha:0,duration:500,onComplete:()=>s.destroy()});}
 }
 
-const game=new Phaser.Game({type:Phaser.CANVAS,width:W,height:H,parent:'game',backgroundColor:'#101719',pixelArt:true,antialias:false,roundPixels:true,physics:{default:'arcade',arcade:{gravity:{x:0,y:0},debug:false}},scene:[Boot,Title,Game],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},render:{pixelArt:true,antialias:false,roundPixels:true}});
+const game=new Phaser.Game({type:Phaser.CANVAS,width:W,height:H,parent:'game',backgroundColor:'#101719',pixelArt:true,antialias:false,roundPixels:true,physics:{default:'arcade',arcade:{gravity:{x:0,y:0},debug:false}},scene:[Boot,Title,Game,BenchmarkScene],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},render:{pixelArt:true,antialias:false,roundPixels:true}});
 if (new URLSearchParams(location.search).has('test')) {
   Object.defineProperty(window, '__belfast', { value: { scene: (key: string) => game.scene.getScene(key), fps: () => game.loop.actualFps }, configurable: true });
 }

@@ -23,6 +23,20 @@ Open the local URL printed by Vite. The title screen starts with **Enter** or **
 
 The single continuous route moves from residential terraces, through the city centre, and into a City Hall finale. Shambler, runner, and spitter encounters precede a two phase boss fight. Grenades are limited; defeated enemies occasionally drop a grenade. The game can be restarted after victory or defeat.
 
+## Visual benchmark V2
+
+The playable one-screen art benchmark is available at `/?benchmark=1`. It uses an original Belfast terrace and corner shop scene, an eight-pose survivor, four shambler poses, four runner poses, an eight-frame explosion, animated rain, shop glow, drain steam, and hit and death particles. The benchmark is intentionally separate from the main level pending visual review.
+
+```sh
+npm run dev
+# Open the Vite URL with ?benchmark=1
+npm run record:benchmark
+```
+
+The generated source atlases and reduced runtime frames are under `src/assets/`: eight player poses, four frames for each of two zombie archetypes, and eight explosion frames. Sources are original to this project and were reduced to hard-pixel PNG frames. Benchmark screenshots and footage are linked below. Existing main-level gameplay and art remain unchanged at this checkpoint.
+
+Current benchmark limits: it is a fixed one-screen street with a richly layered painted backdrop, atmospheric animation, and no camera parallax. The City Hall, spitter and boss artwork have not been converted. The final explosion frame is intentionally bright and briefly obscures nearby sprites.
+
 ## Build and verify
 
 ```sh
@@ -59,6 +73,16 @@ The deploy workflow runs only when manually dispatched; pushes run verification 
 ![Victory screen](artifacts/victory-screen.png)
 
 [Watch the gameplay recording](artifacts/gameplay-run.webm)
+
+### Before and benchmark
+
+![Original residential gameplay and V2 street benchmark side by side](artifacts/benchmark-before-after.png)
+
+![V2 street grenade impact](artifacts/benchmark-explosion.png)
+
+![V2 benchmark clear screen](artifacts/benchmark-clear.png)
+
+[Watch V2 benchmark gameplay](artifacts/benchmark-gameplay.webm)
 
 ## Notes
 
