@@ -34,6 +34,10 @@ npm run preview
 
 The static build is written to `dist/`. `npm run build` runs the TypeScript project check before creating the production site. The GitHub Actions verification workflow runs the unit checks and Playwright smoke test, then stores `dist` as an artifact; it does not publish or deploy.
 
+## Gameplay recording
+
+Run `npm run record` to build the production site and record a keyboard driven Chromium session to `artifacts/gameplay-run.webm`. The checked in recording covers the residential route, city centre, and City Hall boss arrival; this run ends in defeat during phase one, so it does not show the victory sequence.
+
 ## GitHub Pages
 
 The Vite build uses relative asset paths and can be hosted beneath the repository path. To publish after reviewing the build:
@@ -53,6 +57,8 @@ The deploy workflow runs only when manually dispatched; pushes run verification 
 ![Game over screen](artifacts/game-over-screen.png)
 
 ![Victory screen](artifacts/victory-screen.png)
+
+[Watch the gameplay recording](artifacts/gameplay-run.webm)
 
 ## Notes
 

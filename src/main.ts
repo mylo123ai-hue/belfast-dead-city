@@ -261,7 +261,7 @@ class Game extends Phaser.Scene {
    else if(life>22)s.destroy();
   }
  }
- explode(x:number,y:number){this.cameras.main.shake(180,.006);this.fx(x,y,'impact');AudioBus.play(95,.16,'sawtooth',.07);for(const e of this.hostiles.getChildren() as AnySprite[])if(e.active&&Phaser.Math.Distance.Between(x,y,e.x,e.y)<70)this.killEnemy(e);if(this.boss&&this.boss.active&&Phaser.Math.Distance.Between(x,y,this.boss.x,this.boss.y)<95)this.bossHp-=3;this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss!.setTint(0x83a276);this.updateBossHud();}else this.win();}}
+ explode(x:number,y:number){this.cameras.main.shake(180,.006);this.fx(x,y,'impact');AudioBus.play(95,.16,'sawtooth',.07);for(const e of this.hostiles.getChildren() as AnySprite[])if(e.active&&Phaser.Math.Distance.Between(x,y,e.x,e.y)<70)this.killEnemy(e);if(this.boss?.active&&Phaser.Math.Distance.Between(x,y,this.boss.x,this.boss.y)<95){this.bossHp-=3;this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss.setTint(0x83a276);this.updateBossHud();}else this.win();}}}
  ambientFx(){if(this.health<=0||this.complete)return;const cx=this.cameras.main.scrollX;const x=cx+this.rand()*W;const s=this.add.rectangle(x,FLOOR-1,1,5+this.rand()*12,0xbec6b0,.18).setDepth(13);this.tweens.add({targets:s,y:s.y+14,alpha:0,duration:500,onComplete:()=>s.destroy()});}
 }
 

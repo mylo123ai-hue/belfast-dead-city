@@ -46,11 +46,13 @@ try {
   await page.keyboard.down('K');
   await page.waitForTimeout(70);
   await page.keyboard.up('K');
+  const visibleBullets = await page.evaluate(() => window.__belfast.scene('Game').bullets.countActive());
+  await page.waitForTimeout(850);
   const combat = await page.evaluate(() => {
     const g = window.__belfast.scene('Game');
-    return { visibleBullets: g.bullets.countActive(), grenades: g.ammo };
+    return { grenades: g.ammo, bossHp: g.bossHp };
   });
-  if (combat.visibleBullets < 1 || combat.grenades !== 3) throw new Error(`Combat inputs failed: ${JSON.stringify(combat)}`);
+  if (visibleBullets < 1 || combat.grenades !== 3 || combat.bossHp !== 0) throw new Error(`Combat inputs failed: ${JSON.stringify({ visibleBullets, ...combat })}`);
   await page.keyboard.down('P');
   await page.waitForTimeout(70);
   await page.keyboard.up('P');
