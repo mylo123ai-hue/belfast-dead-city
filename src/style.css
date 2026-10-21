@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+:root { color-scheme: dark; font-family: 'IBM Plex Mono', monospace; background: #101719; color: #e5e8d2; font-synthesis: none; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 320px; min-height: 100%; background: #101719; }
+body { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+#game-shell { width: min(100%, 1120px); }
+#game { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid #64716a; background: #0c1418; box-shadow: 0 24px 100px #030606aa, 0 0 0 5px #202b29; }
+#game canvas { display: block; width: 100% !important; height: 100% !important; image-rendering: pixelated; image-rendering: crisp-edges; outline: none; }
+footer { display: flex; justify-content: space-between; padding: 13px 2px 0; color: #66746e; font-size: 9px; letter-spacing: .15em; }
+@media(max-width:600px) { body { padding: 12px; } footer { font-size: 7px; } }
