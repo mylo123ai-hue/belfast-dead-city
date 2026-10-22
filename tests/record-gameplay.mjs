@@ -3,30 +3,29 @@ import { mkdir, rename } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const outDir = 'artifacts/recording';
+const outDir = 'artifacts/v3-recording';
 await mkdir(outDir, { recursive: true });
 const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4173'], { stdio: 'ignore' });
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1200, height: 760 }, recordVideo: { dir: outDir, size: { width: 1200, height: 760 } } });
 const page = await context.newPage();
 const errors = [];
-page.on('pageerror', (e) => errors.push(e.message));
-let recording;
+page.on('pageerror', (e) => errors.push(e.stack || e.message));
+let video;
 
-async function status() {
+async function state() {
   return page.evaluate(() => {
     const g = window.__belfast.scene('Game');
-    return { x: Math.round(g.player.x), health: g.health, ammo: g.ammo, bossHp: g.bossHp, phase: g.bossPhase, boss: !!g.boss, complete: g.complete, gameOver: g.health <= 0, banner: g.centerText.text };
+    return { x: Math.round(g.player.x), health: g.health, ammo: g.ammo, kills: g.kills, bossHp: g.bossHp,
+      phase: g.bossPhase, boss: !!g.boss, complete: g.complete, gameOver: g.health <= 0,
+      elapsed: Math.round(g.elapsed), section: g.section, banner: g.centerText.text, fps: Math.round(window.__belfast.fps()),
+      paused: g.paused, bossActive: g.boss?.active ?? false, bossX: Math.round(g.boss?.x ?? 0), bullets: g.bullets.countActive(),
+      explosion: g.children.list.some((child) => child.texture?.key?.startsWith('arc-blast-') && child.active) };
   });
 }
-async function shot() {
-  await page.keyboard.down('J'); await wait(45); await page.keyboard.up('J'); await wait(145);
-}
-async function logProgress(label) {
-  const s = await status();
-  console.log(`${label}: ${JSON.stringify(s)}`);
-  return s;
-}
+async function tap(key, hold = 72) { await page.keyboard.down(key); await wait(hold); await page.keyboard.up(key); }
+async function screenshot(name, settle = 360) { if (settle) await wait(settle); await page.screenshot({ path: 'artifacts/' + name }); }
+async function log(label) { const s = await state(); console.log(label + ': ' + JSON.stringify(s)); return s; }
 
 try {
   let ready = false;
@@ -37,63 +36,69 @@ try {
   if (!ready) throw new Error('Vite preview did not become ready');
   await page.goto('http://127.0.0.1:4173/?test=1');
   await page.waitForFunction(() => window.__belfast?.scene('Title')?.sys.isActive());
-  await wait(1400);
-  recording = page.video();
+  await screenshot('v3-title.png');
+  video = page.video();
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => window.__belfast?.scene('Game')?.player);
-  await wait(900);
-  console.log('Started the run from the title screen with Enter.');
+  await page.waitForTimeout(700);
+  await screenshot('v3-residential.png');
+  console.log('Natural run started at the title screen using Enter; all movement and combat below use keyboard input.');
 
   await page.keyboard.down('D');
-  let i = 0;
-  let s = await status();
-  while (s.x < 3970 && s.health > 0 && i < 280) {
-    await shot();
-    if (i % 17 === 8) { await page.keyboard.press('Space'); }
-    if (i % 24 === 11) { await page.keyboard.press('K'); }
-    i++;
-    if (i % 20 === 0) s = await logProgress('Street advance');
-    else s = await status();
+  await page.keyboard.down('J');
+  let s = await state(), tick = 0, nextJump = Date.now() + 500, nextGrenade = [720, 1850, 2900, 3920], grenadeAt = new Set();
+  let screens = new Set();
+  while (s.x < 3995 && !s.gameOver && tick < 650) {
+    if (Date.now() >= nextJump) { await tap('Space', 65); nextJump = Date.now() + 610; }
+    for (const x of nextGrenade) if (s.x > x && !grenadeAt.has(x) && s.ammo > 0) { await tap('K'); grenadeAt.add(x); }
+    if (s.x > 1850 && !screens.has('city')) { await screenshot('v3-city-centre.png'); screens.add('city'); }
+    if (s.explosion && !screens.has('explosion')) { await screenshot('v3-explosion.png',35); screens.add('explosion'); }
+    if (s.x > 4050 && !screens.has('hall') && s.bossActive) { await screenshot('v3-city-hall-boss.png'); screens.add('hall'); }
+    if (tick % 15 === 0) s = await log('Route'); else s = await state();
+    tick++;
+    await wait(70);
   }
   await page.keyboard.up('D');
-  s = await logProgress('City Hall approach');
+  s = await log('City Hall approach');
+  if (s.gameOver) console.log('Player was defeated before reaching the boss; the recording preserves the natural result.');
 
-  if (s.health > 0) {
-    await page.keyboard.down('D');
-    let approachTicks = 0;
-    while (!s.boss && s.x < 4100 && s.health > 0 && approachTicks < 80) {
-      await shot(); s = await status(); approachTicks++;
+  let bossAction = '', bossTicks = 0, nextHop = Date.now() + 250, strafeUntil = 0;
+  if (!s.gameOver) {
+    await page.keyboard.down('J');
+    if (s.ammo > 0) await tap('K');
+    while (!s.complete && !s.gameOver && bossTicks < 720) {
+      s = await state();
+      if (s.explosion && !screens.has('explosion')) { await screenshot('v3-explosion.png',35); screens.add('explosion'); }
+      if (!screens.has('hall') && s.bossActive && (s.bossHp <= 30 || bossTicks === 64)) {
+        await screenshot('v3-city-hall-boss.png'); screens.add('hall');
+      }
+      if (s.banner !== bossAction) {
+        bossAction = s.banner;
+        if (bossAction.includes('GROUND SLAM')) { await tap('Space', 80); }
+        if (bossAction.includes('ACID VOLLEY')) { await tap('Space', 80); }
+      }
+      if (Date.now() >= nextHop) { await tap('Space', 65); nextHop = Date.now() + 650; }
+      if (s.ammo > 0 && s.phase === 1 && bossTicks % 80 === 4) await tap('K');
+      const direction = Math.floor(bossTicks / 28) % 2 === 0 ? 'D' : 'A';
+      if (Date.now() >= strafeUntil) {
+        await page.keyboard.up(direction === 'D' ? 'A' : 'D');
+        await page.keyboard.down(direction);
+        strafeUntil = Date.now() + 260;
+      }
+      if (bossTicks % 40 === 0) s = await log('Boss');
+      bossTicks++;
+      await wait(70);
     }
-    await page.keyboard.up('D');
-    s = await logProgress('Boss entrance');
+    await page.keyboard.up('A'); await page.keyboard.up('D'); await page.keyboard.up('J');
   }
-
-  let dodgedBanner = '';
-  let bossTicks = 0;
-  while (s.boss && !s.complete && s.health > 0 && bossTicks < 220) {
-    if (String(s.banner).includes('DODGE THE STRIKE') && dodgedBanner !== s.banner) {
-      await page.keyboard.down('A'); await wait(520); await page.keyboard.up('A');
-      dodgedBanner = s.banner;
-    }
-    await shot();
-    if (bossTicks % 11 === 8 && s.phase === 1) {
-      await page.keyboard.down('D'); await wait(260); await page.keyboard.up('D');
-    }
-    bossTicks++;
-    if (bossTicks % 15 === 0) s = await logProgress('Boss fight');
-    else s = await status();
-  }
-  s = await logProgress('Run result');
-  if (!s.complete) console.log('Run did not reach victory through keyboard play; the recorded session preserves the actual result.');
-  else await wait(1700);
-  await wait(400);
-  if (errors.length) throw new Error(`Browser exceptions: ${errors.join(' | ')}`);
+  s = await log('Natural run result');
+  await screenshot(s.complete ? 'v3-victory.png' : 'v3-run-result.png');
+  if (errors.length) throw new Error('Browser exceptions: ' + errors.join(' | '));
+  if (s.complete) console.log('Natural victory verified: browser video captured real keyboard play through the boss defeat and victory screen.');
+  else console.log('No natural victory this run. The video shows the actual run result; this is not counted as a victory test.');
 } finally {
   await context.close();
-  if (recording) {
-    const tempPath = await recording.path();
-    await rename(tempPath, 'artifacts/gameplay-run.webm');
-  }
+  if (video) await rename(await video.path(), 'artifacts/v3-full-playthrough.webm');
   await browser.close();
   server.kill('SIGTERM');
 }

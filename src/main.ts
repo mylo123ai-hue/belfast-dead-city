@@ -1,8 +1,51 @@
 import Phaser from 'phaser';
 import './style.css';
 import BenchmarkScene from './BenchmarkScene';
+import player0 from './assets/player/player-0.png';
+import player1 from './assets/player/player-1.png';
+import player2 from './assets/player/player-2.png';
+import player3 from './assets/player/player-3.png';
+import player4 from './assets/player/player-4.png';
+import player5 from './assets/player/player-5.png';
+import player6 from './assets/player/player-6.png';
+import player7 from './assets/player/player-7.png';
+import zombie0 from './assets/zombie/zombie-0.png';
+import zombie1 from './assets/zombie/zombie-1.png';
+import zombie2 from './assets/zombie/zombie-2.png';
+import zombie3 from './assets/zombie/zombie-3.png';
+import zombie4 from './assets/zombie/zombie-4.png';
+import zombie5 from './assets/zombie/zombie-5.png';
+import zombie6 from './assets/zombie/zombie-6.png';
+import zombie7 from './assets/zombie/zombie-7.png';
+import explosion0 from './assets/explosion/explosion-0.png';
+import explosion1 from './assets/explosion/explosion-1.png';
+import explosion2 from './assets/explosion/explosion-2.png';
+import explosion3 from './assets/explosion/explosion-3.png';
+import explosion4 from './assets/explosion/explosion-4.png';
+import explosion5 from './assets/explosion/explosion-5.png';
+import explosion6 from './assets/explosion/explosion-6.png';
+import explosion7 from './assets/explosion/explosion-7.png';
+import benchmarkStreet from './assets/benchmark-street.png';
+import cityCentreArt from './assets/city-centre-arcade.png';
+import cityHallArt from './assets/city-hall-arcade.png';
+import streetWest from './assets/street-west.png';
+import streetEast from './assets/street-east.png';
+import centreWest from './assets/city-centre-west.png';
+import centreEast from './assets/city-centre-east.png';
+import hallWest from './assets/city-hall-west.png';
+import boss0 from './assets/boss-0.png';
+import boss1 from './assets/boss-1.png';
+import boss2 from './assets/boss-2.png';
+import boss3 from './assets/boss-3.png';
+import platformTaxi from './assets/platform-taxi.png';
+import platformShelter from './assets/platform-shelter.png';
+import platformWall from './assets/platform-wall.png';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
+const playerFrames=[player0,player1,player2,player3,player4,player5,player6,player7];
+const zombieFrames=[zombie0,zombie1,zombie2,zombie3,zombie4,zombie5,zombie6,zombie7];
+const explosionFrames=[explosion0,explosion1,explosion2,explosion3,explosion4,explosion5,explosion6,explosion7];
+const bossFrames=[boss0,boss1,boss2,boss3];
 
 type AnySprite = Phaser.Physics.Arcade.Sprite;
 
@@ -44,8 +87,18 @@ function spriteDraw(ctx:CanvasRenderingContext2D,kind:string,frame:number=0){
 
 class Boot extends Phaser.Scene {
  constructor(){super('Boot');}
+ preload(){
+  playerFrames.forEach((url,i)=>this.load.image(`arc-player-${i}`,url));
+  zombieFrames.forEach((url,i)=>this.load.image(`arc-zombie-${i}`,url));
+  explosionFrames.forEach((url,i)=>this.load.image(`arc-blast-${i}`,url));
+  this.load.image('street-art',benchmarkStreet);this.load.image('city-centre-art',cityCentreArt);this.load.image('city-hall-art',cityHallArt);
+  this.load.image('street-west',streetWest);this.load.image('street-east',streetEast);this.load.image('centre-west',centreWest);this.load.image('centre-east',centreEast);this.load.image('hall-west',hallWest);
+  bossFrames.forEach((url,i)=>this.load.image(`arc-boss-${i}`,url));
+  this.load.image('platform-taxi',platformTaxi);this.load.image('platform-shelter',platformShelter);this.load.image('platform-wall',platformWall);
+ }
  create(){
   const s=this;
+  if(!this.anims.exists('arc-blast'))this.anims.create({key:'arc-blast',frames:explosionFrames.map((_,i)=>({key:`arc-blast-${i}`})),frameRate:22,repeat:0});
   for(const kind of ['player','shambler','runner','spitter']) for(let f=0;f<4;f++) canvasTex(s,`${kind}-${f}`,24,32,c=>spriteDraw(c,kind,f));
   canvasTex(s,'bullet',7,3,c=>{box(c,0,1,7,1,'#fff1ad');box(c,2,0,3,3,'#ed9d44');});
   canvasTex(s,'acid',7,5,c=>{box(c,1,1,5,3,'#9bd18c');box(c,2,0,3,5,'#c1d877');});
@@ -53,7 +106,6 @@ class Boot extends Phaser.Scene {
   canvasTex(s,'heart',9,8,c=>{box(c,1,1,3,2,'#c84b3a');box(c,5,1,3,2,'#c84b3a');box(c,1,2,7,3,'#e46043');box(c,2,5,5,2,'#ba392e');box(c,3,7,3,1,'#852c28');});
   for(let f=0;f<7;f++) canvasTex(s,`fire-${f}`,24,24,c=>{box(c,9-f%3,11-f,6+f%2,6+f,'#d95134');box(c,11,9-f,3,8+f,'#f0c35d');box(c,12,12-f,2,4,'#fff0af');});
   for(let f=0;f<4;f++) canvasTex(s,`smoke-${f}`,16,16,c=>{for(let i=0;i<8;i++){const x=2+(i*7+f*3)%11,y=2+(i*5+f*4)%11;box(c,x,y,2,2,['#61706a','#899086','#475a5b'][i%3]);}});
-  for(let f=0;f<3;f++)canvasTex(s,`zombie-large-${f}`,72,88,c=>drawBoss(c,f));
   canvasTex(s,'scenery',WORLD,270,c=>drawScenery(c));
   canvasTex(s,'hall',400,190,c=>drawCityHall(c));
   canvasTex(s,'boss-sky',WORLD,270,c=>drawSky(c));
@@ -91,13 +143,6 @@ function drawCityHall(c:CanvasRenderingContext2D){
  box(c,177,127,46,49,'#716e5a');box(c,184,128,32,47,'#202e30');box(c,193,132,14,43,'#79836f');box(c,177,125,46,5,'#dfd1a5');
  box(c,20,174,360,6,'#20292a');
 }
-function drawBoss(c:CanvasRenderingContext2D,frame:number){
- const swing=[0,3,-2][frame]!;
- box(c,16,81,42,4,'#111719');box(c,15,65,17,18,'#454d40');box(c,39,66,17,17,'#414a3d');box(c,12,44,49,30,'#59654b');box(c,8,34,56,20,'#647151');box(c,15,16,43,27,'#72775e');box(c,19,11,37,12,'#686f59');
- box(c,20,25,11,10,'#a0a080');box(c,43,25,10,10,'#a0a080');box(c,23,27,7,7,'#e1b856');box(c,44,27,7,7,'#e1b856');box(c,23,28+(frame===2?1:0),4,5,'#b34435');box(c,46,28+(frame===2?1:0),4,5,'#b34435');
- box(c,28,39+(frame===1?1:0),21,6,'#423b34');box(c,32,40+(frame===1?1:0),4,4,'#dfd4b3');box(c,41,40+(frame===1?1:0),4,4,'#ded0a9');
- box(c,6,47,13,22,'#586548');box(c,1,60+swing,14,12,'#765644');box(c,55,47,14,21,'#516045');box(c,62,59-swing,9,15,'#785740');box(c,35,50,8,15,'#9f4835');box(c,41,58,6,10,'#c16646');
-}
 function drawScenery(c:CanvasRenderingContext2D){
  const g=c.createLinearGradient(0,0,0,230);g.addColorStop(0,'#2b3d42');g.addColorStop(1,'#747467');c.fillStyle=g;c.fillRect(0,0,WORLD,230);
  // Distant chimney skyline and soft cloud bands
@@ -127,7 +172,7 @@ function drawScenery(c:CanvasRenderingContext2D){
 class Title extends Phaser.Scene {
  constructor(){super('Title');}
  create(){
-  this.add.image(0,0,'scenery').setOrigin(0).setDisplaySize(W,W).setScrollFactor(.5);
+  this.add.image(0,0,'street-art').setOrigin(0).setDisplaySize(W,H).setScrollFactor(.5);
   this.add.rectangle(0,0,W,H,0x0b1316,.50).setOrigin(0).setScrollFactor(0);
   this.add.rectangle(22,20,3,43,0xe5aa4b).setOrigin(0);
   this.add.text(38,18,'A BELFAST ARCADE STORY',{fontFamily:'monospace',fontSize:'9px',color:'#d5c397',letterSpacing:2});
@@ -137,7 +182,7 @@ class Title extends Phaser.Scene {
   this.add.text(42,171,'BELFAST, NORTHERN IRELAND  /  03:17 AM',{fontFamily:'monospace',fontSize:'9px',color:'#ddd2b7',letterSpacing:1});
   this.add.text(42,190,'THE DEAD HAVE TAKEN THE CITY CENTRE.',{fontFamily:'monospace',fontSize:'9px',color:'#d9d6bd'});
   this.add.text(42,203,'GET TO CITY HALL. MAKE IT COUNT.',{fontFamily:'monospace',fontSize:'9px',color:'#d9d6bd'});
-  this.add.text(42,236,'ENTER  START      A / D  MOVE      SPACE  JUMP      J  FIRE      K  GRENADE',{fontFamily:'monospace',fontSize:'8px',color:'#e6b86b',letterSpacing:.6});
+  this.add.text(42,236,'ENTER START   A / D MOVE   SPACE / W JUMP   J FIRE   K GRENADE',{fontFamily:'monospace',fontSize:'8px',color:'#e6b86b',letterSpacing:.4});
   this.add.text(423,251,'PRESS ENTER',{fontFamily:'monospace',fontSize:'8px',color:'#d3d6c6'}).setOrigin(.5).setAlpha(1);
   this.tweens.add({targets:this.children.list.at(-1),alpha:.15,duration:650,yoyo:true,repeat:-1});
   this.input.keyboard!.once('keydown-ENTER',()=>this.scene.start('Game'));
@@ -154,36 +199,60 @@ class AudioBus{
 
 class Game extends Phaser.Scene {
  player!:AnySprite; bullets!:Phaser.Physics.Arcade.Group; hostiles!:Phaser.Physics.Arcade.Group; hostileShots!:Phaser.Physics.Arcade.Group; grenades!:Phaser.Physics.Arcade.Group; effects!:Phaser.Physics.Arcade.Group;
- keys!:Record<string,Phaser.Input.Keyboard.Key>; health=5; ammo=4; kills=0; elapsed=0; jumpBufferedUntil=0; lastFire=0; lastGrenade=0; lastDamage=0; paused=false; muted=false; boss:Phaser.Physics.Arcade.Sprite|null=null; bossHp=0; bossPhase=0; bossAtk=0; locked=new Set<number>(); complete=false; ground!:Phaser.Physics.Arcade.StaticBody; spawned:Set<number>=new Set(); hud!:Phaser.GameObjects.Container; section='RESIDENTIAL BELFAST'; sectionText!:Phaser.GameObjects.Text; centerText!:Phaser.GameObjects.Text; overlay!:Phaser.GameObjects.Container; hudText!:Phaser.GameObjects.Text; healthIcons:Phaser.GameObjects.Image[]=[]; grenadeIcons:Phaser.GameObjects.Image[]=[]; bossBar!:Phaser.GameObjects.Rectangle; bossBarBg!:Phaser.GameObjects.Rectangle; prompt!:Phaser.GameObjects.Text; rng=0xBAADF00D;
+ keys!:Record<string,Phaser.Input.Keyboard.Key>; health=5; ammo=4; kills=0; elapsed=0; jumpBufferedUntil=0; coyoteUntil=0; lastFire=0; lastGrenade=0; lastDamage=0; actionUntil=0; paused=false; muted=false; wasAirborne=false; dying=false; boss:Phaser.Physics.Arcade.Sprite|null=null; bossHp=0; bossPhase=0; bossAtk=0; locked=new Set<number>(); complete=false; ground!:Phaser.Physics.Arcade.StaticBody; platforms!:Phaser.Physics.Arcade.StaticGroup; spawned:Set<number>=new Set(); hud!:Phaser.GameObjects.Container; section='RESIDENTIAL BELFAST'; sectionText!:Phaser.GameObjects.Text; centerText!:Phaser.GameObjects.Text; overlay!:Phaser.GameObjects.Container; hudText!:Phaser.GameObjects.Text; healthIcons:Phaser.GameObjects.Image[]=[]; grenadeIcons:Phaser.GameObjects.Image[]=[]; bossBar!:Phaser.GameObjects.Rectangle; bossBarBg!:Phaser.GameObjects.Rectangle; prompt!:Phaser.GameObjects.Text; rng=0xBAADF00D;
  constructor(){super('Game');}
  create(){
-  this.resetRun();
+  this.resetRun();this.physics.world.isPaused=false;
   this.physics.world.setBounds(0,0,WORLD,FLOOR+45);
   this.add.image(0,0,'boss-sky').setOrigin(0).setScrollFactor(.12).setDepth(-20);
   this.add.image(0,0,'scenery').setOrigin(0).setDepth(-10);
   const far=new Phaser.GameObjects.TileSprite(this,0,0,WORLD,140,'scenery'); far.setOrigin(0).setPosition(0,72).setTileScale(1.8).setAlpha(.14).setDepth(-9);this.add.existing(far); far.setScrollFactor(.35,0);
-  this.add.image(4160,2,'hall').setOrigin(0).setDepth(-8);
+  this.add.image(0,-18,'street-west').setOrigin(0).setDepth(-7);
+  this.add.image(480,-18,'street-east').setOrigin(0).setDepth(-7);
+  this.add.image(960,-18,'street-art').setOrigin(0).setDepth(-7);
+  this.add.image(1440,-18,'centre-west').setOrigin(0).setDepth(-7);
+  this.add.image(1920,-18,'centre-east').setOrigin(0).setDepth(-7);
+  this.add.image(2400,-18,'city-centre-art').setOrigin(0).setDepth(-7);
+  this.add.image(2880,-18,'city-centre-art').setOrigin(0).setDepth(-7);
+  this.add.image(3360,-18,'hall-west').setOrigin(0).setDepth(-7);
+  this.add.image(3520,-18,'hall-west').setOrigin(0).setDepth(-7);
+  this.add.image(4000,-18,'city-hall-art').setOrigin(0).setDepth(-7);
+  this.add.image(4480,-18,'city-hall-art').setOrigin(0).setDepth(-7).setDisplaySize(500,H);
   this.add.rectangle(WORLD/2,FLOOR+35,WORLD,90,0x2b3535).setDepth(-5);
   this.add.rectangle(WORLD/2,FLOOR,WORLD,3,0xa69b7e).setDepth(-4);
   for(let x=120;x<WORLD;x+=210)this.add.rectangle(x,FLOOR+24,42,2,0x9d9779,.75).setDepth(-3);
   this.add.rectangle(0,FLOOR+35,WORLD,52,0x152020,.36).setDepth(5);
-  this.player=this.physics.add.sprite(80,FLOOR-16,'player-0').setDepth(8).setCollideWorldBounds(true).setGravityY(680).setSize(12,26).setOffset(6,5).setMaxVelocity(205,520);
+  this.player=this.physics.add.sprite(80,FLOOR-22,'arc-player-0').setDepth(8).setCollideWorldBounds(true).setGravityY(680).setSize(23,44).setOffset(20,10).setMaxVelocity(205,520);
   this.bullets=this.physics.add.group({defaultKey:'bullet',maxSize:28});this.hostiles=this.physics.add.group({maxSize:18});this.hostileShots=this.physics.add.group({defaultKey:'acid',maxSize:16});this.grenades=this.physics.add.group({defaultKey:'grenade',maxSize:5});this.effects=this.physics.add.group({maxSize:50});
   this.physics.add.overlap(this.bullets,this.hostiles,this.hitEnemy,undefined,this);this.physics.add.overlap(this.player,this.hostiles,this.touchEnemy,undefined,this);this.physics.add.overlap(this.player,this.hostileShots,this.hitPlayer,undefined,this);
   this.cameras.main.setBounds(0,0,WORLD,H).startFollow(this.player,true,.11,.1).setDeadzone(120,40);
-  this.keys=Object.fromEntries(['A','D','W','SPACE','J','K','P','ESC','M','ENTER'].map(k=>[k,this.input.keyboard!.addKey(k)])) as Record<string,Phaser.Input.Keyboard.Key>;
+  this.keys=Object.fromEntries(['A','D','W','SPACE','J','K','P','ESC','M','ENTER','R'].map(k=>[k,this.input.keyboard!.addKey(k)])) as Record<string,Phaser.Input.Keyboard.Key>;
   this.makeHUD();
   const ground=this.physics.add.staticImage(WORLD/2,FLOOR+24,'bullet').setVisible(false).setDisplaySize(WORLD,48).refreshBody();this.ground=(ground.body as Phaser.Physics.Arcade.StaticBody);
   this.physics.add.collider(this.player,ground);this.physics.add.collider(this.hostiles,ground);
+  this.platforms=this.physics.add.staticGroup();
+  this.placePlatform(365,'platform-taxi',120,58);this.placePlatform(805,'platform-wall',100,44);
+  this.placePlatform(1210,'platform-shelter',90,64);this.placePlatform(1810,'platform-taxi',120,58);
+  this.placePlatform(2495,'platform-wall',100,44);this.placePlatform(2910,'platform-taxi',120,58);
+  this.physics.add.collider(this.player,this.platforms);this.physics.add.collider(this.hostiles,this.platforms);
+  this.physics.add.collider(this.grenades,ground);this.physics.add.collider(this.grenades,this.platforms);
 
   this.input.keyboard!.on('keydown-M',()=>{AudioBus.toggle();this.updateHud();});
-  this.input.keyboard!.on('keydown-ESC',()=>{this.paused=!this.paused;this.updateHud();});
-  this.input.keyboard!.on('keydown-P',()=>{this.paused=!this.paused;this.updateHud();});
+  this.input.keyboard!.on('keydown-ESC',()=>this.setPaused(!this.paused));
+  this.input.keyboard!.on('keydown-P',()=>this.setPaused(!this.paused));
+  this.input.keyboard!.on('keydown-R',()=>this.scene.restart());
   this.input.keyboard!.on('keydown-ENTER',()=>{if(this.complete||this.health<=0)this.scene.restart();});
   this.time.addEvent({delay:12500,loop:true,callback:()=>this.ambientFx()});
   this.updateHud();
  }
- resetRun(){this.health=5;this.ammo=4;this.kills=0;this.elapsed=0;this.jumpBufferedUntil=0;this.lastFire=0;this.lastGrenade=0;this.lastDamage=0;this.paused=false;this.boss=null;this.bossHp=0;this.bossPhase=0;this.bossAtk=0;this.locked.clear();this.spawned.clear();this.complete=false;this.section='RESIDENTIAL BELFAST';this.rng=0xBAADF00D;this.healthIcons=[];this.grenadeIcons=[];}
+ resetRun(){this.health=5;this.ammo=4;this.kills=0;this.elapsed=0;this.jumpBufferedUntil=0;this.coyoteUntil=0;this.lastFire=0;this.lastGrenade=0;this.lastDamage=-10000;this.actionUntil=0;this.wasAirborne=false;this.dying=false;this.paused=false;this.boss=null;this.bossHp=0;this.bossPhase=0;this.bossAtk=0;this.locked.clear();this.spawned.clear();this.complete=false;this.section='RESIDENTIAL BELFAST';this.rng=0xBAADF00D;this.healthIcons=[];this.grenadeIcons=[];}
+ placePlatform(x:number,key:string,w:number,h:number){
+  const cy=FLOOR-h/2;this.add.image(x,cy,key).setDepth(6);
+  const roof=FLOOR-h;
+  const body=this.physics.add.staticImage(x,roof+2,'bullet').setVisible(false).setDisplaySize(w-14,4).refreshBody();
+  const collision=body.body as Phaser.Physics.Arcade.StaticBody;collision.checkCollision.down=false;collision.checkCollision.left=false;collision.checkCollision.right=false;
+  this.platforms.add(body);
+ }
  makeHUD(){
   const hud=this.add.container(0,0).setScrollFactor(0).setDepth(100);this.hud=hud;
   hud.add(this.add.rectangle(0,0,W,36,0x101719,.94).setOrigin(0));hud.add(this.add.rectangle(0,36,W,1,0x897b61,.75).setOrigin(0));
@@ -202,24 +271,32 @@ class Game extends Phaser.Scene {
   this.healthIcons.forEach((i,n)=>i.setAlpha(n<this.health?1:.2));this.grenadeIcons.forEach((i,n)=>i.setAlpha(n<this.ammo?1:.2));
   this.sectionText.setText(this.section);
   this.hudText.setText(`${String(Math.floor(this.elapsed/60)).padStart(2,'0')}:${String(Math.floor(this.elapsed%60)).padStart(2,'0')}   ${String(this.kills).padStart(2,'0')}X`);
-  this.prompt.setText(`A / D MOVE     SPACE JUMP     J FIRE     K GRENADE     P PAUSE     M MUTE`);
-  if(this.paused){this.showOverlay('PAUSED','P OR ESC  RESUME     ENTER  RESTART');}else if(this.complete){this.showOverlay('BELFAST STANDS','VICTORY  //  PRESS ENTER TO PLAY AGAIN');}else if(this.health<=0){this.showOverlay('YOU FELL IN BELFAST','PRESS ENTER TO TRY AGAIN');}else this.overlay.setVisible(false);
+  this.prompt.setText(`A / D MOVE   SPACE JUMP   J FIRE   K GRENADE   P / ESC PAUSE   R RESTART   M MUTE`);
+  if(this.paused){if(!this.overlay.visible||this.overlay.getData('state')!=='PAUSED')this.showOverlay('PAUSED','P / ESC RESUME     R RESTART');}
+  else if(this.complete){if(!this.overlay.visible||this.overlay.getData('state')!=='WIN')this.showOverlay('BELFAST STANDS','VICTORY  //  ENTER OR R TO PLAY AGAIN');}
+  else if(this.health<=0&&!this.dying){if(!this.overlay.visible||this.overlay.getData('state')!=='DOWN')this.showOverlay('YOU FELL IN BELFAST','ENTER OR R  /  TRY AGAIN');}
+  else{this.overlay.setVisible(false);this.overlay.setData('state','');}
  }
- showOverlay(title:string,sub:string){this.overlay.removeAll(true);this.overlay.setVisible(true);this.overlay.add(this.add.rectangle(0,0,288,94,0x11191a,.95).setStrokeStyle(1,0xa98c57).setInteractive({useHandCursor:true}).on('pointerup',()=>this.scene.restart()));this.overlay.add(this.add.text(0,-19,title,{fontFamily:'Arial Black, sans-serif',fontSize:'19px',fontStyle:'bold',color:'#e0ad5e',stroke:'#322820',strokeThickness:2}).setOrigin(.5));this.overlay.add(this.add.text(0,17,sub,{fontFamily:'monospace',fontSize:'7px',color:'#e1dfcc',letterSpacing:1}).setOrigin(.5));}
+ setPaused(value:boolean){this.paused=value;this.physics.world.isPaused=value;this.time.timeScale=value?0:1;this.tweens.timeScale=value?0:1;this.updateHud();}
+ showOverlay(title:string,sub:string){this.overlay.removeAll(true);this.overlay.setVisible(true).setData('state',title==='PAUSED'?'PAUSED':title==='BELFAST STANDS'?'WIN':'DOWN');this.overlay.add(this.add.rectangle(0,0,288,94,0x11191a,.95).setStrokeStyle(1,0xa98c57).setInteractive({useHandCursor:true}).on('pointerup',()=>this.scene.restart()));this.overlay.add(this.add.text(0,-19,title,{fontFamily:'Arial Black, sans-serif',fontSize:'19px',fontStyle:'bold',color:'#e0ad5e',stroke:'#322820',strokeThickness:2}).setOrigin(.5));this.overlay.add(this.add.text(0,17,sub,{fontFamily:'monospace',fontSize:'7px',color:'#e1dfcc',letterSpacing:1}).setOrigin(.5));}
  sectionAt(x:number){return x<1450?'RESIDENTIAL BELFAST':x<3050?'CITY CENTRE':'CITY HALL';}
  rand(){this.rng=(this.rng*1664525+1013904223)>>>0;return this.rng/4294967296;}
  update(_t:number,dt:number){
   if(this.health<=0||this.complete)return;if(this.paused)return;
   const d=Math.min(dt,40);this.elapsed+=d/1000;const x=this.player.x;this.section=this.sectionAt(x);
-  if(this.keys.A.isDown||this.keys.D.isDown){const dir=this.keys.A.isDown?-1:1;this.player.setVelocityX(dir*(this.keys.A.isDown&&this.keys.D.isDown?0:128));this.player.setFlipX(dir<0);}else this.player.setVelocityX(this.player.body!.velocity.x*.78);
-  if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)||Phaser.Input.Keyboard.JustDown(this.keys.W))this.jumpBufferedUntil=this.elapsed*1000+130;
-  if(this.elapsed*1000<this.jumpBufferedUntil&&(this.player.body as Phaser.Physics.Arcade.Body).blocked.down){this.jumpBufferedUntil=0;this.player.setVelocityY(-305);AudioBus.play(330,.07,'triangle',.03);}
-  if(Phaser.Input.Keyboard.JustDown(this.keys.J))this.fire();if(Phaser.Input.Keyboard.JustDown(this.keys.K))this.throwGrenade();
+  const body=this.player.body as Phaser.Physics.Arcade.Body,now=this.elapsed*1000;
+  if(body.blocked.down||body.touching.down)this.coyoteUntil=now+115;
+  if(this.keys.A.isDown||this.keys.D.isDown){const dir=this.keys.A.isDown?-1:1;this.player.setVelocityX(dir*(this.keys.A.isDown&&this.keys.D.isDown?0:145));this.player.setFlipX(dir<0);}else this.player.setVelocityX(body.velocity.x*.78);
+  if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)||Phaser.Input.Keyboard.JustDown(this.keys.W))this.jumpBufferedUntil=now+145;
+  if(now<this.jumpBufferedUntil&&now<this.coyoteUntil){this.jumpBufferedUntil=0;this.coyoteUntil=0;this.player.setVelocityY(this.keys.SPACE.isDown||this.keys.W.isDown?-340:-305);this.wasAirborne=true;this.fx(this.player.x,this.player.y+17,'landing');AudioBus.play(330,.07,'triangle',.03);}
+  if(body.velocity.y>45)this.wasAirborne=true;
+  if(this.wasAirborne&&(body.blocked.down||body.touching.down)&&body.velocity.y===0){this.wasAirborne=false;this.fx(this.player.x,this.player.y+17,'landing');AudioBus.play(115,.04,'triangle',.018);}
+  if(this.keys.J.isDown||Phaser.Input.Keyboard.JustDown(this.keys.J))this.fire();if(Phaser.Input.Keyboard.JustDown(this.keys.K))this.throwGrenade();
   this.animatePlayer();this.waveCheck(x);this.updateEnemies(d);this.updateObjects();this.updateBoss(d);this.updateHud();
  }
- animatePlayer(){const v=Math.abs(this.player.body!.velocity.x);const f=Math.floor(this.elapsed*11)%4;let ix=0;if(this.player.body!.velocity.y<-30)ix=1;else if(v>12)ix=[0,1,2,1][f];if(this.elapsed*10%3<1)ix=2;this.player.setTexture(`player-${ix}`);}
- fire(){if(this.elapsed*1000-this.lastFire<180)return;this.lastFire=this.elapsed*1000;const dir=this.player.flipX?-1:1,b=this.bullets.get(this.player.x+dir*17,this.player.y-2,'bullet') as AnySprite|null;if(!b)return;b.setActive(true).setVisible(true).setDepth(12).setFlipX(dir<0);b.body?.reset(b.x,b.y);b.setVelocityX(dir*430);b.setVelocityY(0);(b.body as Phaser.Physics.Arcade.Body).allowGravity=false;b.setData('life',0);this.fx(this.player.x+dir*13,this.player.y-5,'flash');AudioBus.play(500,.035,'square',.035);}
- throwGrenade(){if(!this.ammo||this.elapsed*1000-this.lastGrenade<500)return;this.lastGrenade=this.elapsed*1000;this.ammo--;const dir=this.player.flipX?-1:1,g=this.grenades.get(this.player.x+dir*13,this.player.y-5,'grenade') as AnySprite|null;if(g){g.setActive(true).setVisible(true).setDepth(12);g.body?.reset(g.x,g.y);g.setVelocity(dir*140,-260);g.setBounce(.55);g.setData('life',0);}AudioBus.play(140,.1,'triangle',.06);}
+ animatePlayer(){const v=Math.abs(this.player.body!.velocity.x),f=Math.floor(this.elapsed*12)%4;let ix=0;const now=this.elapsed*1000;if(now<this.lastDamage+220)ix=5;else if(this.player.body!.velocity.y<-30)ix=3;else if(this.player.body!.velocity.y>55)ix=7;else if(now<this.actionUntil)ix=6;else if(now<this.lastFire+95)ix=4;else if(v>16)ix=f%2?1:2;this.player.setTexture(`arc-player-${ix}`);}
+ fire(){if(this.elapsed*1000-this.lastFire<130)return;this.lastFire=this.elapsed*1000;const dir=this.player.flipX?-1:1,b=this.bullets.get(this.player.x+dir*23,this.player.y-5,'bullet') as AnySprite|null;if(!b)return;b.setActive(true).setVisible(true).setDepth(12).setFlipX(dir<0);b.body?.reset(b.x,b.y);b.setVelocityX(dir*455);b.setVelocityY(0);(b.body as Phaser.Physics.Arcade.Body).allowGravity=false;b.setData('life',0);this.actionUntil=Math.max(this.actionUntil,this.elapsed*1000+80);this.fx(this.player.x+dir*20,this.player.y-8,'flash');AudioBus.play(500,.035,'square',.035);}
+ throwGrenade(){if(!this.ammo||this.elapsed*1000-this.lastGrenade<500)return;this.lastGrenade=this.elapsed*1000;this.actionUntil=this.elapsed*1000+220;this.ammo--;const dir=this.player.flipX?-1:1,g=this.grenades.get(this.player.x+dir*20,this.player.y-5,'grenade') as AnySprite|null;if(g){g.setActive(true).setVisible(true).setDepth(12);g.body?.reset(g.x,g.y);const body=g.body as Phaser.Physics.Arcade.Body;body.enable=true;body.allowGravity=true;body.setGravityY(680);g.setVelocity(dir*155,-280);g.setBounce(.48);g.setData('life',0);}AudioBus.play(140,.1,'triangle',.06);this.updateHud();}
  waveCheck(x:number){
   const waves=[{at:460,types:['shambler','shambler']},{at:880,types:['shambler','shambler','shambler']},{at:1280,types:['runner','shambler','shambler']},{at:1740,types:['runner','runner','shambler']},{at:2180,types:['spitter','runner','shambler']},{at:2630,types:['spitter','runner','runner','shambler']},{at:3090,types:['spitter','runner','spitter']},{at:3520,types:['runner','runner','spitter']},{at:3910,types:['spitter','runner','shambler']},{at:4150,types:['shambler','runner']}];
   for(let i=0;i<waves.length;i++){const w=waves[i]!;if(x>w.at&&!this.spawned.has(i)){this.spawned.add(i);w.types.forEach((type,j)=>this.spawnEnemy(w.at+j*39,type));}}
@@ -227,32 +304,78 @@ class Game extends Phaser.Scene {
   if(x>3005&&!this.locked.has(1)){this.locked.add(1);this.banner('SECTION III  /  CITY HALL');}
   if(x>3995&&!this.locked.has(2)){this.locked.add(2);this.startBoss();}
  }
- spawnEnemy(x:number,type:string){const side=this.rand()<.48?-1:1;const spawnX=x+(side<0?-200:220);const e=this.hostiles.get(spawnX,FLOOR-16,`${type}-0`) as AnySprite|null;if(!e)return;e.setActive(true).setVisible(true).setDepth(9).setSize(13,25).setOffset(5,6).setCollideWorldBounds(true).setGravityY(680).setVelocityX(0);(e.body as Phaser.Physics.Arcade.Body).allowGravity=true;e.setData({kind:type,hp:type==='shambler'?4:type==='runner'?2:3,attack:0,frame:0,hit:0,dead:false});}
- updateEnemies(_d:number){for(const e of this.hostiles.getChildren() as AnySprite[]){if(!e.active)continue;const k=e.getData('kind') as string,dx=this.player.x-e.x,dir=Math.sign(dx),dist=Math.abs(dx);let spd=k==='runner'?91:k==='spitter'?25:39;if(k==='spitter'){
-  if(dist<245&&dist>80){e.setVelocityX(0);const attack=e.getData('attack') as number;if(this.elapsed*1000-attack>2050){e.setData('attack',this.elapsed*1000);this.acid(e,dir);}}else e.setVelocityX(dir*spd);
- }else e.setVelocityX(dir*spd);
- e.setFlipX(dir<0);const f=Math.floor(this.elapsed*(k==='runner'?13:7))%4;e.setTexture(`${k}-${f}`);
- if(this.elapsed*1000-(e.getData('hit') as number)<100)e.setTint(0xffffff);else e.clearTint();
+ spawnEnemy(x:number,type:string){const side=this.rand()<.48?-1:1;const spawnX=x+(side<0?-200:220),key=type==='runner'?'arc-zombie-4':type==='shambler'?'arc-zombie-0':'spitter-0';const e=this.hostiles.get(spawnX,FLOOR-22,key) as AnySprite|null;if(!e)return;e.setActive(true).setVisible(true).setDepth(9).setCollideWorldBounds(true).setGravityY(680).setVelocityX(0);if(type==='spitter')e.setScale(1.25).setSize(17,29).setOffset(3,3);else e.setScale(1).setSize(24,44).setOffset(20,10);const body=e.body as Phaser.Physics.Arcade.Body;body.enable=true;body.allowGravity=true;body.reset(spawnX,FLOOR-22);body.setMaxVelocity(220,520);e.setData({kind:type,hp:type==='shambler'?4:type==='runner'?2:3,attack:0,frame:0,hit:0,hitUntil:0,climbAt:0,state:'stalk',dead:false});}
+ updateEnemies(_d:number){const now=this.elapsed*1000;for(const e of this.hostiles.getChildren() as AnySprite[]){if(!e.active)continue;const k=e.getData('kind') as string,dx=this.player.x-e.x,dir=Math.sign(dx)||1,dist=Math.abs(dx),body=e.body as Phaser.Physics.Arcade.Body,state=e.getData('state') as string||'stalk';
+  if(now<(e.getData('hitUntil') as number)){body.setVelocityX(body.velocity.x*.84);e.setTexture(k==='runner'?'arc-zombie-7':k==='spitter'?'spitter-3':'arc-zombie-3').setTintFill(0xffecd0);continue;}else e.clearTint();
+  const playerAbove=this.player.y<e.y-29;if(playerAbove&&dist<112&&now>(e.getData('climbAt') as number||0)&&(body.blocked.down||body.touching.down)){body.setVelocityY(-330);e.setData('climbAt',now+1250);}
+  if(k==='spitter'){
+   if(state==='windup'){body.setVelocityX(0);if(now>=(e.getData('attackAt') as number)){e.setData('state','stalk');e.setData('attack',now+1850);this.acid(e,dir);}}
+   else if(dist<285&&dist>100){body.setVelocityX(0);if(now>(e.getData('attack') as number)){e.setData('state','windup');e.setData('attackAt',now+620);}}
+   else body.setVelocityX(dir*26);
+   const f=state==='windup'?3:Math.floor(now/300)%2;e.setTexture(`spitter-${f}`);
+  }else if(k==='runner'){
+   if(state==='windup'){body.setVelocityX(0);if(now>=(e.getData('attackAt') as number)){e.setData('state','lunge');e.setData('attackAt',now+420);body.setVelocityX(dir*225);body.setVelocityY(playerAbove?-305:-70);}}
+   else if(state==='lunge'){body.setVelocityX(dir*175);if(now>=(e.getData('attackAt') as number)){e.setData('state','stalk');e.setData('attack',now+1050);}}
+   else{body.setVelocityX(dir*(dist<48?0:77));if(dist<112&&now>(e.getData('attack') as number)){e.setData('state','windup');e.setData('attackAt',now+470);}}
+   e.setTexture(state==='windup'?'arc-zombie-4':state==='lunge'?'arc-zombie-7':`arc-zombie-${Math.floor(now/110)%2?5:6}`);
+  }else{
+   if(state==='windup'){body.setVelocityX(0);if(now>=(e.getData('attackAt') as number)){e.setData('state','stalk');e.setData('attack',now+1100);if(dist<68&&Math.abs(e.y-this.player.y)<48)this.damage(1,e.x);}}
+   else{body.setVelocityX(dir*(dist<48?0:36));if(dist<68&&Math.abs(e.y-this.player.y)<48&&now>(e.getData('attack') as number)){e.setData('state','windup');e.setData('attackAt',now+520);}}
+   e.setTexture(state==='windup'?'arc-zombie-2':Math.floor(now/245)%2?'arc-zombie-0':'arc-zombie-1');
+  }
+  e.setFlipX(dir<0);
  }}
- acid(e:AnySprite,dir:number){const p=this.hostileShots.get(e.x+dir*15,e.y-4,'acid') as AnySprite|null;if(!p)return;p.setActive(true).setVisible(true).setDepth(11);p.body?.reset(p.x,p.y);p.setVelocity(dir*115,-20);p.setData('life',0);AudioBus.play(185,.09,'sawtooth',.025);}
- hitEnemy(b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,e:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const bullet=b as AnySprite,enemy=e as AnySprite;if(!bullet.active||!enemy.active)return;bullet.destroy();const hp=(enemy.getData('hp') as number)-1;enemy.setData('hp',hp);enemy.setData('hit',this.elapsed*1000);this.fx(enemy.x,enemy.y-6,'hit');if(hp<=0)this.killEnemy(enemy);}
- killEnemy(e:AnySprite){e.disableBody(true,true);this.kills++;this.fx(e.x,e.y-5,'death');AudioBus.play(100,.16,'triangle',.04);if(this.rand()<.16&&this.ammo<4){this.ammo++;this.fx(e.x,e.y-14,'pickup');}}
+ acid(e:AnySprite,dir:number){const p=this.hostileShots.get(e.x+dir*20,e.y-9,'acid') as AnySprite|null;if(!p)return;p.setActive(true).setVisible(true).setDepth(11);p.body?.reset(p.x,p.y);const aim=Math.atan2(this.player.y-e.y,this.player.x-e.x);p.setVelocity(Math.cos(aim)*155,Math.sin(aim)*155);p.setRotation(aim);p.setData('life',0);AudioBus.play(185,.09,'sawtooth',.025);}
+ hitEnemy(b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,e:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const bullet=b as AnySprite,enemy=e as AnySprite;if(!bullet.active||!enemy.active)return;const shove=Math.sign((bullet.body as Phaser.Physics.Arcade.Body).velocity.x)||1;bullet.destroy();const hp=(enemy.getData('hp') as number)-1,now=this.elapsed*1000;enemy.setData('hp',hp);enemy.setData('hit',now);enemy.setData('hitUntil',now+115);enemy.setVelocityX(shove*105);this.fx(enemy.x,enemy.y-8,'hit');AudioBus.play(245,.025,'square',.02);if(hp<=0)this.killEnemy(enemy);}
+ killEnemy(e:AnySprite){if(e.getData('dead'))return;const x=e.x,y=e.y,key=e.texture.key,flip=e.flipX;e.setData('dead',true);e.disableBody(true,true);const corpse=this.add.image(x,y,key).setDepth(10).setFlipX(flip).setTint(0xb49b85);this.tweens.add({targets:corpse,y:y+6,alpha:0,scaleX:.78,scaleY:.48,angle:flip?-12:12,duration:310,ease:'Quad.easeIn',onComplete:()=>corpse.destroy()});this.kills++;this.fx(x,y-5,'death');AudioBus.play(100,.16,'triangle',.04);if(this.rand()<.18&&this.ammo<4){this.ammo++;this.fx(x,y-14,'pickup');}}
  touchEnemy(_p:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,e:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){this.damage(1,(e as AnySprite).x);}
- hitPlayer(p:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){(p as AnySprite).destroy();this.damage(1,this.player.x);}
- damage(n:number,x:number){if(this.elapsed*1000-this.lastDamage<1100||this.health<=0)return;this.lastDamage=this.elapsed*1000;this.health=Math.max(0,this.health-n);this.player.setTintFill(0xffffff);this.time.delayedCall(120,()=>this.player.clearTint());this.cameras.main.shake(160,.008);AudioBus.play(75,.18,'sawtooth',.055);this.fx(x,this.player.y,'hit');this.updateHud();}
- hitBoss(b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,_bb:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const bullet=b as AnySprite;if(!bullet.active||!this.boss?.active)return;bullet.destroy();this.bossHp--;this.boss?.setTintFill(0xffffff);this.time.delayedCall(90,()=>this.boss?.clearTint());this.fx(this.boss!.x+(this.rand()-.5)*35,this.boss!.y-5,'hit');this.cameras.main.shake(65,.002);this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss!.setTint(0x83a276);this.updateBossHud();}else this.win();}}
- startBoss(){this.banner('THE CITY HALL // SOMETHING STIRS');this.boss=this.physics.add.sprite(4320,FLOOR-44,'zombie-large-0').setDepth(10).setCollideWorldBounds(true).setGravityY(680).setSize(45,69).setOffset(13,12);this.boss.setScale(1.1);this.bossHp=46;this.bossPhase=0;this.physics.add.overlap(this.bullets,this.boss,this.hitBoss,undefined,this);this.physics.add.collider(this.boss,this.ground.gameObject);this.bossAtk=this.elapsed*1000;this.bossBarBg.setVisible(true);this.bossBar.setVisible(true);this.updateBossHud();this.cameras.main.shake(500,.009);AudioBus.play(48,.5,'sawtooth',.06);}
- updateBossHud(){if(!this.boss)return;const max=this.bossPhase===0?46:30;this.bossBar.width=Math.max(0,210*this.bossHp/max);this.bossBar.setFillStyle(this.bossPhase===1?0xb7b35e:0xd0523e);}
- updateBoss(_d:number){const b=this.boss;if(!b?.active)return;const dir=Math.sign(this.player.x-b.x),dist=Math.abs(this.player.x-b.x),phase=this.bossPhase;const interval=phase===0?2400:1600;
-  if(dist>80)b.setVelocityX(dir*(phase===0?30:54));else b.setVelocityX(0);
-  if(this.elapsed*1000-this.bossAtk>interval){this.bossAtk=this.elapsed*1000;if(phase===0){this.banner('INCOMING  /  DODGE THE STRIKE');const targetX=this.player.x;this.time.delayedCall(750,()=>{if(!this.boss?.active)return;for(let j=-1;j<=1;j++)this.fx(targetX+j*27,FLOOR-4,'impact');this.cameras.main.shake(220,.009);if(Math.abs(this.player.x-targetX)<52)this.damage(1,targetX);});}else{this.banner('IT SPITS ACROSS THE STREET');for(const offset of [-.22,0,.22]){const p=this.hostileShots.get(b.x+dir*28,b.y-25,'acid') as AnySprite|null;if(p){p.setActive(true).setVisible(true);p.body?.reset(p.x,p.y);p.setVelocity(dir*155,offset*230);}}}}
-  b.setFlipX(dir<0).setTexture(`zombie-large-${Math.floor(this.elapsed*4)%3}`);
+ hitPlayer(a:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const objects=[a,b] as AnySprite[];const projectile=objects.find(o=>o&&o!==this.player&&o.texture?.key==='acid')??objects.find(o=>o&&o!==this.player&&typeof o.destroy==='function');projectile?.destroy?.();this.damage(1,this.player.x);}
+ damage(n:number,x:number){
+  const now=this.elapsed*1000,body=this.player?.body as Phaser.Physics.Arcade.Body|null;
+  if(now-this.lastDamage<1050||this.health<=0||!body)return;
+  this.lastDamage=now;this.health=Math.max(0,this.health-n);this.player.setTintFill(0xffffff);this.time.delayedCall(110,()=>this.player?.clearTint());
+  const dir=Math.sign(this.player.x-x||1);body.setVelocityX(dir*(this.health===0?110:185));body.setVelocityY(this.health===0?-230:-125);this.wasAirborne=true;
+  this.cameras.main.shake(this.health===0?330:190,this.health===0 ? .014 : .009);AudioBus.play(this.health===0?55:75,.18,'sawtooth',.055);this.fx(x,this.player.y,'hit');
+  if(this.health===0){
+   this.dying=true;this.player.setTexture('arc-player-5').setAngle(dir*8);
+   this.time.delayedCall(170,()=>{if(this.player?.active)this.player.setTexture('arc-player-7');});
+   this.tweens.add({targets:this.player,angle:dir*72,duration:610,ease:'Quad.easeIn',onComplete:()=>{this.player.disableBody(false,false);this.dying=false;this.updateHud();}});
+  }
+  this.updateHud();
  }
- win(){this.complete=true;this.boss?.disableBody(true,true);this.bossBarBg.setVisible(false);this.bossBar.setVisible(false);this.cameras.main.flash(650,245,219,155);this.cameras.main.shake(400,.012);this.banner('BELFAST STANDS');for(let i=0;i<7;i++)this.time.delayedCall(i*115,()=>this.fx(this.boss?.x??4320,FLOOR-15,'impact'));AudioBus.play(660,.4,'triangle',.08);this.updateHud();}
+ hitBoss(a:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const objects=[a,b] as AnySprite[];const bullet=objects.find(o=>o!==this.boss&&o?.texture?.key==='bullet')??objects.find(o=>o!==this.boss&&o?.active&&typeof o.destroy==='function');if(!bullet?.active||!this.boss?.active)return;bullet.destroy();this.bossHp--;this.boss?.setTintFill(0xffffff);this.time.delayedCall(90,()=>this.boss?.clearTint());this.fx(this.boss!.x+(this.rand()-.5)*50,this.boss!.y-13,'hit');this.cameras.main.shake(72,.0025);this.updateBossHud();if(this.bossHp<=0)this.nextBossPhase();}
+ nextBossPhase(){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=26;this.bossAtk=this.elapsed*1000+1250;this.banner('IT IS RISING AGAIN  //  PHASE II');this.cameras.main.flash(260,110,177,112);this.boss?.setTexture('arc-boss-3').clearTint();this.updateBossHud();}else this.win();}
+ startBoss(){const before=this.health;this.health=Math.min(5,this.health+2);this.banner(this.health>before?'CITY HALL FIELD KIT  //  +2 HEALTH':'THE CITY HALL // SOMETHING STIRS');if(this.health>before){this.fx(this.player.x,this.player.y-10,'pickup');AudioBus.play(600,.12,'triangle',.045);}this.boss=this.physics.add.sprite(4320,FLOOR-64,'arc-boss-0').setDepth(10).setCollideWorldBounds(true).setGravityY(680).setSize(76,92).setOffset(26,37);this.boss.setScale(1);this.bossHp=38;this.bossPhase=0;this.boss.setData({windupUntil:0,slamUntil:0});this.physics.add.overlap(this.bullets,this.boss,this.hitBoss,undefined,this);this.physics.add.collider(this.boss,this.ground.gameObject);this.physics.add.collider(this.boss,this.platforms);this.bossAtk=this.elapsed*1000;this.bossBarBg.setVisible(true);this.bossBar.setVisible(true);this.updateBossHud();this.updateHud();this.cameras.main.shake(500,.009);AudioBus.play(48,.5,'sawtooth',.06);}
+ updateBossHud(){if(!this.boss)return;const max=this.bossPhase===0?38:26;this.bossBar.width=Math.max(0,210*this.bossHp/max);this.bossBar.setFillStyle(this.bossPhase===1?0xb7b35e:0xd0523e);}
+ updateBoss(_d:number){
+  const b=this.boss;if(!b?.active)return;
+  const dir=Math.sign(this.player.x-b.x)||1,dist=Math.abs(this.player.x-b.x),phase=this.bossPhase,now=this.elapsed*1000,interval=phase===0?2600:2850;
+  if(dist>82)b.setVelocityX(dir*(phase===0?27:48));else b.setVelocityX(0);
+  if(now-this.bossAtk>interval){
+   this.bossAtk=now;
+   if(phase===0){
+    const targetX=Phaser.Math.Clamp(this.player.x,4080,4580);
+    b.setData('windupUntil',now+850);b.setTexture('arc-boss-1');
+    this.banner('GROUND SLAM  //  CLEAR THE WARNING MARKERS');
+    const marks:Phaser.GameObjects.Rectangle[]=[];
+    for(let j=-1;j<=1;j++){const mark=this.add.rectangle(targetX+j*34,FLOOR-12,12,25,0xf1b251,.72).setDepth(7);marks.push(mark);this.tweens.add({targets:mark,alpha:{from:.18,to:.85},duration:160,yoyo:true,repeat:3});}
+    this.time.delayedCall(850,()=>{if(!this.boss?.active||this.bossPhase!==0)return;this.boss!.setData('slamUntil',this.elapsed*1000+320).setTexture('arc-boss-2');marks.forEach(m=>m.destroy());for(let j=-1;j<=1;j++)this.fx(targetX+j*34,FLOOR-4,'impact');this.cameras.main.shake(220,.009);if(Math.abs(this.player.x-targetX)<45&&this.player.y>FLOOR-42)this.damage(1,targetX);this.time.delayedCall(330,()=>{if(this.boss?.active&&this.bossPhase===0)this.boss.setTexture('arc-boss-0');});});
+   }else{
+    this.banner('ACID VOLLEY  //  JUMP OR BREAK AWAY');
+    const bx=b.x,by=b.y-24,aim=Math.atan2(this.player.y-by,this.player.x-bx);
+    this.time.delayedCall(450,()=>{if(!this.boss?.active||this.bossPhase!==1)return;for(const offset of [-.25,0,.25]){const p=this.hostileShots.get(bx+dir*38,by,'acid') as AnySprite|null;if(p){p.setActive(true).setVisible(true);p.body?.reset(p.x,p.y);const a=aim+offset;p.setVelocity(Math.cos(a)*180,Math.sin(a)*180);p.setRotation(a);p.setData('life',0);}}});
+   }
+  }
+  b.setFlipX(dir<0);
+  if(phase===1)b.setTexture('arc-boss-3');
+  else if(now<(b.getData('windupUntil') as number)||now<(b.getData('slamUntil') as number))b.setTexture(now<(b.getData('slamUntil') as number)?'arc-boss-2':'arc-boss-1');
+  else if(b.texture.key!=='arc-boss-0')b.setTexture('arc-boss-0');
+ }
+ win(){if(this.complete)return;this.complete=true;const b=this.boss;if(b?.active){const corpse=this.add.image(b.x,b.y,b.texture.key).setDepth(12).setScale(b.scaleX).setFlipX(b.flipX).setTint(0xd9c6a0);b.disableBody(true,true);this.tweens.add({targets:corpse,angle:-25,y:corpse.y+24,scaleX:corpse.scaleX*1.18,alpha:0,duration:1050,ease:'Quad.easeIn',onComplete:()=>corpse.destroy()});}this.bossBarBg.setVisible(false);this.bossBar.setVisible(false);this.cameras.main.flash(650,245,219,155);this.cameras.main.shake(400,.012);this.banner('BELFAST STANDS');for(let i=0;i<7;i++)this.time.delayedCall(i*115,()=>this.fx(this.boss?.x??4320,FLOOR-15,'impact'));AudioBus.play(660,.4,'triangle',.08);this.time.delayedCall(450,()=>this.updateHud());this.updateHud();}
  banner(t:string){this.centerText.setText(t).setAlpha(1).setScale(1.12);this.tweens.add({targets:this.centerText,alpha:0,scale:1,duration:1600,ease:'Cubic.easeOut'});}
  fx(x:number,y:number,kind:string){
-  if(kind==='flash'){const im=this.add.image(x,y,'fire-0').setDepth(14);this.tweens.add({targets:im,alpha:0,scaleX:1.5,scaleY:1.5,duration:100,onComplete:()=>im.destroy()});return;}
-  const count=kind==='impact'?11:kind==='death'?8:kind==='pickup'?4:4;for(let i=0;i<count;i++){const p=this.effects.get(x,y,`smoke-${i%4}`) as AnySprite|null;if(!p)continue;p.setTexture(kind==='impact'?`fire-${i%7}`:`smoke-${i%4}`).setActive(true).setVisible(true).setDepth(14).setScale(kind==='impact'?1.2:.75+this.rand()*.7);p.body?.reset(x,y);(p.body as Phaser.Physics.Arcade.Body).allowGravity=true;p.setVelocity((this.rand()-.5)*(kind==='impact'?180:100),-this.rand()*(kind==='impact'?175:95));p.setData('life',0);}
+  if(kind==='flash'){const im=this.add.image(x,y,'fire-0').setDepth(14).setBlendMode(Phaser.BlendModes.ADD);this.tweens.add({targets:im,alpha:0,scaleX:1.7,scaleY:1.45,duration:100,onComplete:()=>im.destroy()});return;}
+  const count=kind==='impact'?11:kind==='death'?8:kind==='pickup'?4:kind==='landing'?3:4;for(let i=0;i<count;i++){const p=this.effects.get(x,y,`smoke-${i%4}`) as AnySprite|null;if(!p)continue;p.setTexture(kind==='impact'?`fire-${i%7}`:`smoke-${i%4}`).setActive(true).setVisible(true).setDepth(14).setScale(kind==='impact'?1.2:.75+this.rand()*.7);p.body?.reset(x,y);(p.body as Phaser.Physics.Arcade.Body).allowGravity=true;p.setVelocity((this.rand()-.5)*(kind==='impact'?230:kind==='landing'?70:115),kind==='landing'?-this.rand()*45:-this.rand()*(kind==='impact'?210:110));p.setData('life',0);}
  }
  updateObjects(){
   for(const group of [this.bullets,this.grenades,this.hostileShots,this.effects])for(const s of group.getChildren() as AnySprite[]){if(!s.active)continue;const life=(s.getData('life') as number||0)+1;s.setData('life',life);
@@ -262,7 +385,7 @@ class Game extends Phaser.Scene {
    else if(life>22)s.destroy();
   }
  }
- explode(x:number,y:number){this.cameras.main.shake(180,.006);this.fx(x,y,'impact');AudioBus.play(95,.16,'sawtooth',.07);for(const e of this.hostiles.getChildren() as AnySprite[])if(e.active&&Phaser.Math.Distance.Between(x,y,e.x,e.y)<70)this.killEnemy(e);if(this.boss?.active&&Phaser.Math.Distance.Between(x,y,this.boss.x,this.boss.y)<95){this.bossHp-=3;this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss.setTint(0x83a276);this.updateBossHud();}else this.win();}}}
+ explode(x:number,y:number){this.cameras.main.shake(230,.009);this.cameras.main.flash(85,255,202,117);const blast=this.add.sprite(x,y,'arc-blast-0').setDepth(18).setBlendMode(Phaser.BlendModes.ADD).setScale(1.45);blast.play('arc-blast');blast.once(Phaser.Animations.Events.ANIMATION_COMPLETE,()=>blast.destroy());this.fx(x,y,'impact');AudioBus.play(95,.16,'sawtooth',.07);for(const e of this.hostiles.getChildren() as AnySprite[]){if(!e.active)continue;const dist=Phaser.Math.Distance.Between(x,y,e.x,e.y);if(dist<112)this.killEnemy(e);else if(dist<170){e.setVelocityX(Math.sign(e.x-x||1)*110);e.setData('hitUntil',this.elapsed*1000+180);}}if(this.boss?.active&&Phaser.Math.Distance.Between(x,y,this.boss.x,this.boss.y)<128){this.bossHp-=7;this.boss.setTint(0xf0c67c);this.time.delayedCall(130,()=>this.boss?.clearTint());this.updateBossHud();if(this.bossHp<=0)this.nextBossPhase();}}
  ambientFx(){if(this.health<=0||this.complete)return;const cx=this.cameras.main.scrollX;const x=cx+this.rand()*W;const s=this.add.rectangle(x,FLOOR-1,1,5+this.rand()*12,0xbec6b0,.18).setDepth(13);this.tweens.add({targets:s,y:s.y+14,alpha:0,duration:500,onComplete:()=>s.destroy()});}
 }
 
