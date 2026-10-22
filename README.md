@@ -63,6 +63,33 @@ V3 screenshots from the recorded keyboard run:
 
 The older V2 benchmark evidence is retained separately as `benchmark-street.png`, `benchmark-combat.png`, and `benchmark-gameplay.webm` under `artifacts/`.
 
+## V4 environment and encounter work
+
+- Replaced the flat ground slab with a single pixel-scale street plate spanning the 4,980 px route. It carries the same stone footpath and kerb across all areas, with subdued aggregate, worn lane paint, drains, cracked repairs, wet patches, and two side-street crossings. The residential, centre, and City Hall backdrops are assembled into one panorama with narrow local fades at panel joins; wet playable-road artwork stays continuous underneath.
+- The six taxi, shelter, and low-wall platforms keep top-only collision. Their stored collision tops match the visible roof tops and the collision width is inset 7 px per side. Players can land, jump through from below, jump away, and return. Nearby enemies can jump onto elevated positions. Enemies more than 460 px behind the player are recycled so they cannot attack off-screen or exhaust the spawn pool.
+- Reworked the authored encounter schedule into 13 deterministic mixed groups and expanded the reusable enemy pool. Most groups appear ahead of the player, with occasional rear pressure. A health pickup at the City Centre to City Hall transition restores up to two hearts; the final approach restores up to three.
+- Add `?debug=1` to the game URL and press **F2** for collision outlines; the blue line marks the ground plane, gold marks platforms, and colored boxes mark actors and projectiles.
+- Added browser assertions for the 4,980 px road and backdrop coverage, platform artwork/body alignment and one-way collision flags, mixed enemy composition, behind-camera recycling, landing, jumping through the underside, and enemies reaching a platform.
+
+V4 evidence (the V3 screenshot is the matching pre-overhaul comparison):
+
+| Location | Before | V4 |
+| --- | --- | --- |
+| Residential street | [V3 residential](artifacts/v3-residential.png) | [V4 road and terrace](artifacts/v4-residential-road.png) |
+| Cross-street | — | [Residential junction](artifacts/v4-residential-junction.png) |
+| City-centre combat | [V3 city centre](artifacts/v3-city-centre.png) | [V4 city centre](artifacts/v4-city-centre.png) |
+| Mixed encounter | — | [Mixed zombies](artifacts/v4-mixed-encounter.png) |
+| City Hall transition | — | [City Hall approach](artifacts/v4-city-hall-approach.png) |
+| Collision geometry | — | [Debug overlay](artifacts/v4-collision-debug.png) |
+| Finale | [V3 boss](artifacts/v3-city-hall-boss.png) | [V4 boss](artifacts/v4-city-hall-boss.png) |
+| Victory | [V3 victory](artifacts/v3-victory.png) | [V4 victory](artifacts/v4-victory.png) |
+
+[Watch the natural keyboard-controlled V4 run](artifacts/v4-full-playthrough.webm) · [Read its route and FPS trace](artifacts/v4-playthrough.json)
+
+The V4 recording was 54.52 seconds of video (51.25 seconds on the game clock), ended in victory with 3 health remaining, and recorded 27 kills. It used only keyboard controls: Enter, movement, fire, timed jumps, grenades, and boss evasions; the recording did not change game state. It demonstrates a full natural win, **not** the requested 8–12-minute playthrough target. The run trace sampled 50–60 FPS in headless Chromium 156 on the Linux cloud runner at 1200 × 760; this is not a sustained physical-desktop measurement.
+
+`npm run test:browser` builds production and runs the browser smoke suite. It also overwrites some legacy generic smoke screenshots in `artifacts/`; the named V3 and V4 evidence files above are separate.
+
 ## Build and GitHub Pages
 
 ```sh

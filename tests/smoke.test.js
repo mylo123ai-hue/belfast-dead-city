@@ -17,4 +17,7 @@ test('game provides the requested controls, sections, and enemy roster', async (
   for (const needle of ['RESIDENTIAL BELFAST', 'CITY CENTRE', 'CITY HALL', "'shambler'", "'runner'", "'spitter'", 'GRENADE', 'PAUSED', 'BELFAST STANDS']) {
     assert.ok(source.includes(needle), `missing gameplay marker ${needle}`);
   }
+  for (const needle of ['drawStreetSurface', 'composeBackdrop', 'street-surface', 'keydown-F2', 'drawCollisionDebug']) {
+    assert.ok(source.includes(needle), `missing V4 environment or collision feature ${needle}`);
+  }
 });

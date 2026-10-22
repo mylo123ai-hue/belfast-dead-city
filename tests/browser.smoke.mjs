@@ -48,6 +48,45 @@ try {
   });
   if (!platformLanding.grounded || Math.abs(platformLanding.bottom - platformLanding.top) > 6 || platformLanding.platformCount < 5)
     throw new Error(`Platform landing failed: ${JSON.stringify(platformLanding)}`);
+  const environmentGeometry = await page.evaluate(() => {
+    const g = window.__belfast.scene('Game');
+    return { roadWidth: g.textures.get('street-surface').getSourceImage().width,
+      backdropWidth: g.textures.get('game-panorama').getSourceImage().width,
+      backdropSamples: [0,240,479,480,500,508,959,960,1450,2400,3000,3500,4000,4480,4979].map((x) => {
+        const d = g.textures.get('game-panorama').getSourceImage().getContext('2d').getImageData(x,100,1,1).data;
+        return [x,d[0],d[1],d[2],d[3]];
+      }),
+      backdropPanelAlpha: [240,720,1200,1680,2160,2640,3120,3600,3760,4240,4730].map((x) =>
+        g.textures.get('game-panorama').getSourceImage().getContext('2d').getImageData(x,100,1,1).data[3]),
+      platforms: g.platforms.getChildren().map((p) => ({ key: p.getData('platform'), top: p.body.top,
+        artworkTop: p.getData('artworkTop'), width: p.body.width, artworkWidth: p.getData('artworkWidth'),
+        up: p.body.checkCollision.up, down: p.body.checkCollision.down,
+        left: p.body.checkCollision.left, right: p.body.checkCollision.right })) };
+  });
+  if (environmentGeometry.roadWidth !== 4980 || environmentGeometry.backdropWidth !== 4980 || environmentGeometry.backdropPanelAlpha.some((alpha) => alpha === 0) ||
+      environmentGeometry.platforms.some((p) => p.top !== p.artworkTop || p.width !== p.artworkWidth - 14 ||
+        !p.up || p.down || p.left || p.right)) throw new Error(`Road or platform geometry mismatch: ${JSON.stringify(environmentGeometry)}`);
+  await page.keyboard.press('F2');
+  await page.waitForTimeout(100);
+  const debugVisible = await page.evaluate(() => window.__belfast.scene('Game').collisionDebug.visible);
+  if (!debugVisible) throw new Error('F2 did not enable the collision debug overlay');
+  await page.screenshot({ path: 'artifacts/v4-collision-debug.png' });
+  await page.keyboard.press('F2');
+  await page.waitForTimeout(60);
+  await page.screenshot({ path: 'artifacts/v4-road-platforms.png' });
+  const encounterPressure = await page.evaluate(() => {
+    const g = window.__belfast.scene('Game'); g.waveCheck(2200);
+    const active = g.hostiles.getChildren().filter((e) => e.active);
+    const result = { count: active.length, types: [...new Set(active.map((e) => e.getData('kind')))] };
+    active.forEach((e) => e.disableBody(true, true)); g.spawned.clear(); g.rng = 0xBAADF00D;
+    g.spawnEnemy(2000, 'runner'); const stale = g.hostiles.getChildren().find((e) => e.active);
+    stale.setPosition(g.player.x - 500, g.player.y); stale.body.reset(stale.x, stale.y); g.updateEnemies(16);
+    result.offscreenEnemyRecycled = !stale.active; stale.disableBody(true, true);
+    return result;
+  });
+  if (encounterPressure.count < 15 || !encounterPressure.types.includes('runner') ||
+      !encounterPressure.types.includes('spitter') || !encounterPressure.types.includes('shambler') || !encounterPressure.offscreenEnemyRecycled)
+    throw new Error(`Mixed encounters lacked the planned crowd pressure: ${JSON.stringify(encounterPressure)}`);
   const platformY = platformLanding.y;
   await page.keyboard.down('Space'); await page.waitForTimeout(60); await page.keyboard.up('Space');
   await page.waitForTimeout(240);
@@ -72,7 +111,7 @@ try {
     const g = window.__belfast.scene('Game'); const p = g.platforms.getChildren()[0];
     g.spawnEnemy(300, 'shambler');
     const enemy = g.hostiles.getChildren().find((item) => item.active);
-    enemy.setPosition(p.x - 76, 203); enemy.body.reset(enemy.x, enemy.y); enemy.body.setVelocity(0, 0);
+    enemy.setPosition(p.x - 50, 203); enemy.body.reset(enemy.x, enemy.y); enemy.body.setVelocity(0, 0);
     g.player.setPosition(p.x, p.body.top - 22); g.player.body.reset(g.player.x, g.player.y);
   });
   await page.waitForTimeout(240);
@@ -81,6 +120,17 @@ try {
     return { climbAt: e?.getData('climbAt'), y: e?.y, velocityY: e?.body.velocity.y };
   });
   if (!(elevatedEnemy.climbAt > 0) || !(elevatedEnemy.velocityY < 0 || elevatedEnemy.y < 203)) throw new Error(`Enemy did not jump toward elevated player position: ${JSON.stringify(elevatedEnemy)}`);
+  await page.waitForTimeout(650);
+  const elevatedEnemyLanding = await page.evaluate(() => {
+    const g = window.__belfast.scene('Game'), p = g.platforms.getChildren()[0];
+    const e = g.hostiles.getChildren().find((item) => item.active);
+    const result = { grounded: e.body.blocked.down || e.body.touching.down, bottom: e.body.bottom, roof: p.body.top,
+      x: e.x, y: e.y, velocity: [e.body.velocity.x, e.body.velocity.y], climbAt: e.getData('climbAt'),
+      collision: e.body.checkCollision, platformX: p.x, platformRange: [p.body.left,p.body.right] };
+    e.disableBody(true, true); return result;
+  });
+  if (!elevatedEnemyLanding.grounded || Math.abs(elevatedEnemyLanding.bottom - elevatedEnemyLanding.roof) > 6)
+    throw new Error(`Enemy did not resolve a landing on the visible platform: ${JSON.stringify(elevatedEnemyLanding)}`);
 
   await page.keyboard.down('Space');
   await page.waitForTimeout(80);
@@ -101,6 +151,7 @@ try {
     return { grenades: g.ammo, bossHp: g.bossHp };
   });
   if (visibleBullets < 1 || combat.grenades !== 3 || combat.bossHp !== 0) throw new Error(`Combat inputs failed: ${JSON.stringify({ visibleBullets, ...combat })}`);
+  const healthBeforeAcid = await page.evaluate(() => window.__belfast.scene('Game').health);
   await page.evaluate(() => {
     const g = window.__belfast.scene('Game'); const shot = g.hostileShots.get(g.player.x, g.player.y, 'acid');
     shot.setActive(true).setVisible(true); shot.body.reset(g.player.x, g.player.y); shot.setVelocity(0, 0);
@@ -110,7 +161,7 @@ try {
     const g = window.__belfast.scene('Game'); return { health: g.health, playerBody: !!g.player.body, playerActive: g.player.active,
       projectileCount: g.hostileShots.countActive() };
   });
-  if (acidCollision.health !== 4 || !acidCollision.playerBody || !acidCollision.playerActive || acidCollision.projectileCount > 0)
+  if (acidCollision.health !== healthBeforeAcid - 1 || !acidCollision.playerBody || !acidCollision.playerActive || acidCollision.projectileCount > 0)
     throw new Error(`Acid collision damaged the wrong object: ${JSON.stringify(acidCollision)}`);
   await page.keyboard.down('P');
   await page.waitForTimeout(70);
@@ -131,7 +182,7 @@ try {
     g.cameras.main.scrollX=4050;
     return { boss: !!g.boss, health: g.health };
   });
-  if (!bossEntrance.boss || bossEntrance.health !== 4) throw new Error(`City Hall checkpoint did not restore two hearts: ${JSON.stringify(bossEntrance)}`);
+  if (!bossEntrance.boss || bossEntrance.health !== 5) throw new Error(`City Hall checkpoint did not restore the final health kit: ${JSON.stringify(bossEntrance)}`);
   await page.waitForTimeout(250);
   await page.screenshot({ path: 'artifacts/city-hall-boss.png' });
 
@@ -169,7 +220,7 @@ try {
   const afterDeathRestart = await page.evaluate(() => { const g=window.__belfast.scene('Game');return {x:g.player.x,health:g.health,complete:g.complete}; });
   if (afterDeathRestart.x >= 100 || afterDeathRestart.health !== 5 || afterDeathRestart.complete) throw new Error(`Death restart failed: ${JSON.stringify(afterDeathRestart)}`);
   if (errors.length) throw new Error(`Browser exceptions: ${errors.join(' | ')}`);
-  console.log(JSON.stringify({ initialX, movedX, measuredFps, platformLanding, platformJump, platformReturn, undersidePass, elevatedEnemy, jumpState, combat, acidCollision, flow, gameOverAndRestart: gameOver, afterVictoryRestart, afterDeathRestart, browserErrors: errors, screenshots: ['artifacts/title-screen.png', 'artifacts/gameplay-screen.png', 'artifacts/city-hall-boss.png', 'artifacts/game-over-screen.png', 'artifacts/victory-screen.png'] }, null, 2));
+  console.log(JSON.stringify({ initialX, movedX, measuredFps, environmentGeometry, encounterPressure, platformLanding, platformJump, platformReturn, undersidePass, elevatedEnemy, jumpState, combat, acidCollision, flow, gameOverAndRestart: gameOver, afterVictoryRestart, afterDeathRestart, browserErrors: errors, screenshots: ['artifacts/title-screen.png', 'artifacts/gameplay-screen.png', 'artifacts/v4-collision-debug.png', 'artifacts/v4-road-platforms.png', 'artifacts/city-hall-boss.png', 'artifacts/game-over-screen.png', 'artifacts/victory-screen.png'] }, null, 2));
 } finally {
   await browser?.close();
   server.kill('SIGTERM');

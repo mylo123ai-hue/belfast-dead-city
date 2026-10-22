@@ -1,15 +1,16 @@
 import { chromium } from '@playwright/test';
-import { mkdir, rename } from 'node:fs/promises';
+import { mkdir, rename, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const outDir = 'artifacts/v3-recording';
+const outDir = 'artifacts/v4-recording';
 await mkdir(outDir, { recursive: true });
 const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4173'], { stdio: 'ignore' });
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1200, height: 760 }, recordVideo: { dir: outDir, size: { width: 1200, height: 760 } } });
 const page = await context.newPage();
 const errors = [];
+const trace = [];
 page.on('pageerror', (e) => errors.push(e.stack || e.message));
 let video;
 
@@ -18,14 +19,14 @@ async function state() {
     const g = window.__belfast.scene('Game');
     return { x: Math.round(g.player.x), health: g.health, ammo: g.ammo, kills: g.kills, bossHp: g.bossHp,
       phase: g.bossPhase, boss: !!g.boss, complete: g.complete, gameOver: g.health <= 0,
-      elapsed: Math.round(g.elapsed), section: g.section, banner: g.centerText.text, fps: Math.round(window.__belfast.fps()),
+      elapsed: Number(g.elapsed.toFixed(2)), section: g.section, banner: g.centerText.text, fps: Math.round(window.__belfast.fps()),
       paused: g.paused, bossActive: g.boss?.active ?? false, bossX: Math.round(g.boss?.x ?? 0), bullets: g.bullets.countActive(),
       explosion: g.children.list.some((child) => child.texture?.key?.startsWith('arc-blast-') && child.active) };
   });
 }
 async function tap(key, hold = 72) { await page.keyboard.down(key); await wait(hold); await page.keyboard.up(key); }
 async function screenshot(name, settle = 360) { if (settle) await wait(settle); await page.screenshot({ path: 'artifacts/' + name }); }
-async function log(label) { const s = await state(); console.log(label + ': ' + JSON.stringify(s)); return s; }
+async function log(label) { const s = await state(); trace.push({ label, ...s }); console.log(label + ': ' + JSON.stringify(s)); return s; }
 
 try {
   let ready = false;
@@ -36,12 +37,12 @@ try {
   if (!ready) throw new Error('Vite preview did not become ready');
   await page.goto('http://127.0.0.1:4173/?test=1');
   await page.waitForFunction(() => window.__belfast?.scene('Title')?.sys.isActive());
-  await screenshot('v3-title.png');
+  await screenshot('v4-title.png');
   video = page.video();
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => window.__belfast?.scene('Game')?.player);
   await page.waitForTimeout(700);
-  await screenshot('v3-residential.png');
+  await screenshot('v4-residential-road.png');
   console.log('Natural run started at the title screen using Enter; all movement and combat below use keyboard input.');
 
   await page.keyboard.down('D');
@@ -51,9 +52,12 @@ try {
   while (s.x < 3995 && !s.gameOver && tick < 650) {
     if (Date.now() >= nextJump) { await tap('Space', 65); nextJump = Date.now() + 610; }
     for (const x of nextGrenade) if (s.x > x && !grenadeAt.has(x) && s.ammo > 0) { await tap('K'); grenadeAt.add(x); }
-    if (s.x > 1850 && !screens.has('city')) { await screenshot('v3-city-centre.png'); screens.add('city'); }
-    if (s.explosion && !screens.has('explosion')) { await screenshot('v3-explosion.png',35); screens.add('explosion'); }
-    if (s.x > 4050 && !screens.has('hall') && s.bossActive) { await screenshot('v3-city-hall-boss.png'); screens.add('hall'); }
+    if (s.x > 720 && !screens.has('residential-junction')) { await screenshot('v4-residential-junction.png'); screens.add('residential-junction'); }
+    if (s.x > 1900 && !screens.has('city')) { await screenshot('v4-city-centre.png'); screens.add('city'); }
+    if (s.x > 2700 && !screens.has('mixed')) { await screenshot('v4-mixed-encounter.png'); screens.add('mixed'); }
+    if (s.x > 3350 && !screens.has('cityhall-approach')) { await screenshot('v4-city-hall-approach.png'); screens.add('cityhall-approach'); }
+    if (s.explosion && !screens.has('explosion')) { await screenshot('v4-explosion.png',35); screens.add('explosion'); }
+    if (s.x > 4050 && !screens.has('hall') && s.bossActive) { await screenshot('v4-city-hall-boss.png'); screens.add('hall'); }
     if (tick % 15 === 0) s = await log('Route'); else s = await state();
     tick++;
     await wait(70);
@@ -70,7 +74,7 @@ try {
       s = await state();
       if (s.explosion && !screens.has('explosion')) { await screenshot('v3-explosion.png',35); screens.add('explosion'); }
       if (!screens.has('hall') && s.bossActive && (s.bossHp <= 30 || bossTicks === 64)) {
-        await screenshot('v3-city-hall-boss.png'); screens.add('hall');
+        await screenshot('v4-city-hall-boss.png'); screens.add('hall');
       }
       if (s.banner !== bossAction) {
         bossAction = s.banner;
@@ -92,13 +96,16 @@ try {
     await page.keyboard.up('A'); await page.keyboard.up('D'); await page.keyboard.up('J');
   }
   s = await log('Natural run result');
-  await screenshot(s.complete ? 'v3-victory.png' : 'v3-run-result.png');
+  await screenshot(s.complete ? 'v4-victory.png' : 'v4-run-result.png');
+  await writeFile('artifacts/v4-playthrough.json', JSON.stringify({ result: s, trace,
+    controls: 'Keyboard only: Enter, D/J held, timed Space jumps, K grenades, boss evasions. No scene-state mutation.',
+    outcome: s.complete ? 'natural victory' : s.gameOver ? 'game over' : 'route limit reached' }, null, 2));
   if (errors.length) throw new Error('Browser exceptions: ' + errors.join(' | '));
   if (s.complete) console.log('Natural victory verified: browser video captured real keyboard play through the boss defeat and victory screen.');
   else console.log('No natural victory this run. The video shows the actual run result; this is not counted as a victory test.');
 } finally {
   await context.close();
-  if (video) await rename(await video.path(), 'artifacts/v3-full-playthrough.webm');
+  if (video) await rename(await video.path(), 'artifacts/v4-full-playthrough.webm');
   await browser.close();
   server.kill('SIGTERM');
 }
