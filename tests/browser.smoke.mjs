@@ -1,22 +1,24 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
-const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4173'], { stdio: 'ignore' });
+const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4177'], { stdio: 'ignore' });
 let browser;
 try {
   let ready = false;
   for (let i = 0; i < 60; i++) {
-    try { const response = await fetch('http://127.0.0.1:4173'); if (response.ok) { ready = true; break; } } catch {}
+    try { const response = await fetch('http://127.0.0.1:4177'); if (response.ok) { ready = true; break; } } catch {}
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   if (!ready) throw new Error('Vite preview did not become ready');
 
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true,
+    ...(existsSync('/usr/bin/chromium') ? { executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] } : {}) });
   const page = await browser.newPage({ viewport: { width: 1200, height: 760 } });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('http://127.0.0.1:4173/?test=1');
+  await page.goto('http://127.0.0.1:4177/?test=1');
   await page.waitForFunction(() => window.__belfast?.scene('Title')?.sys.isActive());
   await mkdir('artifacts', { recursive: true });
   await page.screenshot({ path: 'artifacts/title-screen.png' });
@@ -59,14 +61,15 @@ try {
       }),
       backdropPanelAlpha: [240,720,1200,1680,2160,2640,3120,3600,3760,4240,4730].map((x) =>
         g.textures.get('game-panorama').getSourceImage().getContext('2d').getImageData(x,100,1,1).data[3]),
-      platforms: g.platforms.getChildren().map((p) => ({ key: p.getData('platform'), top: p.body.top,
-        artworkTop: p.getData('artworkTop'), width: p.body.width, artworkWidth: p.getData('artworkWidth'),
+      platforms: g.platforms.getChildren().map((p) => ({ key: p.getData('platform'), x: p.x, top: p.body.top,
+        artworkTop: p.getData('artworkTop'), width: p.body.width, roofAnchor: p.getData('roofAnchor'),
         up: p.body.checkCollision.up, down: p.body.checkCollision.down,
         left: p.body.checkCollision.left, right: p.body.checkCollision.right })) };
   });
   if (environmentGeometry.roadWidth !== 4980 || environmentGeometry.asphaltWidth !== 4980 || environmentGeometry.asphaltHeight !== 45 ||
       environmentGeometry.backdropWidth !== 4980 || environmentGeometry.backdropPanelAlpha.some((alpha) => alpha === 0) ||
-      environmentGeometry.platforms.some((p) => p.top !== p.artworkTop || p.width !== p.artworkWidth - 14 ||
+      environmentGeometry.platforms.some((p) => !p.roofAnchor || p.top !== p.artworkTop || p.width !== p.roofAnchor?.width ||
+        p.x !== p.roofAnchor?.worldX || p.top !== p.roofAnchor?.worldY ||
         !p.up || p.down || p.left || p.right)) throw new Error(`Road or platform geometry mismatch: ${JSON.stringify(environmentGeometry)}`);
   await page.keyboard.press('F2');
   await page.waitForTimeout(100);
@@ -106,9 +109,9 @@ try {
     const g=window.__belfast.scene('Game'),p=g.platforms.getChildren()[0];
     g.player.setPosition(p.x,p.body.top+27);g.player.body.reset(g.player.x,g.player.y);g.player.setVelocity(0,-340);
   });
-  await page.waitForTimeout(190);
-  const undersidePass = await page.evaluate(() => { const g=window.__belfast.scene('Game');return {y:g.player.y,velocityY:g.player.body.velocity.y}; });
-  if (undersidePass.velocityY>=0 || undersidePass.y>=157) throw new Error(`Platform blocked a jump from below: ${JSON.stringify(undersidePass)}`);
+  await page.waitForTimeout(240);
+  const undersidePass = await page.evaluate(() => { const g=window.__belfast.scene('Game'),p=g.platforms.getChildren()[0];return {y:g.player.y,bottom:g.player.body.bottom,roof:p.body.top,velocityY:g.player.body.velocity.y}; });
+  if (undersidePass.velocityY>=0 || undersidePass.bottom>=undersidePass.roof) throw new Error(`Platform blocked a jump from below: ${JSON.stringify(undersidePass)}`);
   await page.evaluate(() => {
     const g = window.__belfast.scene('Game'); const p = g.platforms.getChildren()[0];
     g.spawnEnemy(300, 'shambler');
