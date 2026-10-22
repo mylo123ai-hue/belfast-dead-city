@@ -40,6 +40,7 @@ import boss3 from './assets/boss-3.png';
 import platformTaxi from './assets/platform-taxi.png';
 import platformShelter from './assets/platform-shelter.png';
 import platformWall from './assets/platform-wall.png';
+import wetAsphaltArt from './assets/belfast-wet-asphalt.png';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
 const playerFrames=[player0,player1,player2,player3,player4,player5,player6,player7];
@@ -95,6 +96,7 @@ class Boot extends Phaser.Scene {
   this.load.image('street-west',streetWest);this.load.image('street-east',streetEast);this.load.image('centre-west',centreWest);this.load.image('centre-east',centreEast);this.load.image('hall-west',hallWest);
   bossFrames.forEach((url,i)=>this.load.image(`arc-boss-${i}`,url));
   this.load.image('platform-taxi',platformTaxi);this.load.image('platform-shelter',platformShelter);this.load.image('platform-wall',platformWall);
+  this.load.image('wet-asphalt',wetAsphaltArt);
  }
  create(){
   const s=this;
@@ -109,12 +111,13 @@ class Boot extends Phaser.Scene {
   canvasTex(s,'scenery',WORLD,270,c=>drawScenery(c));
   canvasTex(s,'hall',400,190,c=>drawCityHall(c));
   canvasTex(s,'boss-sky',WORLD,270,c=>drawSky(c));
-  canvasTex(s,'street-surface',WORLD,59,c=>drawStreetSurface(c));
+  const wetAsphalt=s.textures.get('wet-asphalt').getSourceImage() as CanvasImageSource;
+  canvasTex(s,'street-surface',WORLD,59,c=>drawStreetSurface(c,wetAsphalt));
   composeBackdrop(s);
   this.scene.start(new URLSearchParams(location.search).has('benchmark')?'Benchmark':'Title');
  }
 }
-function drawStreetSurface(c:CanvasRenderingContext2D){
+function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSource){
  // A single 1px-scale street plate runs under every backdrop panel so the road,
  // kerb and gutter never jump at section boundaries. Colours borrow the wet
  // blue-green asphalt and warm stone light used by the original Belfast art.
@@ -124,18 +127,15 @@ function drawStreetSurface(c:CanvasRenderingContext2D){
  for(let x=0;x<WORLD;x+=8){const n=hash(x);box(c,x,1,7,1,n>.7?'#cabd94':n>.35?'#9a9478':'#797760');box(c,x,2,1,4,'#625f52');if(n>.65)box(c,x+2,5,3,1,'#c0b38d');}
  box(c,0,7,WORLD,1,'#d5c69b');box(c,0,8,WORLD,4,'#776f5b');box(c,0,8,WORLD,1,'#b7a982');box(c,0,12,WORLD,2,'#2d3635');box(c,0,14,WORLD,45,'#293537');
  for(let x=0;x<WORLD;x+=15){const n=hash(x+47);box(c,x,9,13,3,n>.55?'#9b9271':'#867f66');box(c,x+12,9,1,3,'#554f44');}
- // Low contrast asphalt aggregate and road wear: restrained flecks and wheel ruts.
- for(let i=0;i<5200;i++){const x=Math.floor(hash(i+90)*WORLD),y=16+Math.floor(hash(i+613)*41),n=hash(i+321);box(c,x,y,n>.90?3:n>.58?2:1,n>.94?2:1,n>.84?'#596661':n>.55?'#3c4a48':n>.29?'#303d3e':'#202d30');}
- for(let y of [25,48]){box(c,0,y,WORLD,1,'#222e30');box(c,0,y+1,WORLD,1,'#2f3c3d');}
+ // One original painted wet-asphalt plate replaces the old flat slab. It spans
+ // the whole journey, so road material and reflection patterns do not tile at
+ // the neighbourhood transitions.
+ c.imageSmoothingEnabled=false;c.drawImage(wetAsphalt,0,14,WORLD,45);
  // Two legible but badly worn lane dashes give the low side-on road a sense of depth.
  for(let x=76;x<WORLD;x+=306){box(c,x,35,66,2,'#89866f');box(c,x+2,35,58,1,'#b2a685');for(let j=0;j<6;j++)box(c,x+10+j*8,36,4,1,'#646d66');box(c,x+61,35,4,1,'#6f776b');}
- // Wet patches catch small broken streaks of sodium-orange and cold shop light.
- for(let x=48;x<WORLD;x+=139){const y=27+Math.floor(hash(x)*25),w=18+Math.floor(hash(x+5)*38),h=2+Math.floor(hash(x+7)*3);box(c,x,y,w,h,'#21383b');box(c,x+2,y,w-6,1,'#436c66');box(c,x+4,y+1,Math.max(4,w-13),1,'#61786a');box(c,x+6,y+h,Math.max(3,w-19),1,'#bb8051');if(x%3===0)box(c,x+Math.floor(w*.68),y-1,Math.max(3,Math.floor(w*.2)),1,'#75847a');}
  // Belfast street iron: paired storm drains and occasional manhole covers.
- for(let x=205;x<WORLD;x+=383){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
+ for(const x of [205,920,1450,2185,3030,3770,4510]){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
  for(let x=370;x<WORLD;x+=907){box(c,x,42,18,6,'#1a2426');box(c,x+1,42,16,1,'#64716e');box(c,x+2,44,12,1,'#344c4b');box(c,x+2,47,12,1,'#111b1c');for(let j=0;j<6;j++)box(c,x+4+j*2,43,1,4,'#798176');}
- // Hairline repairs and branching cracks, kept away from the walking edge.
- for(let i=0;i<34;i++){const x=140+Math.floor(hash(i+713)*WORLD),y=28+Math.floor(hash(i+810)*27);box(c,x,y,5+Math.floor(hash(i+4)*14),1,'#182426');box(c,x+5,y-2,1,3,'#1b2829');box(c,x+2,y+1,2,1,'#566056');if(i%3===0)box(c,x+8,y+2,4,1,'#1b2829');}
  // Painted side-street crossings at the two urban junctions.
  for(const center of [1450,3030]){box(c,center-34,14,68,43,'#232f31');box(c,center-34,14,68,1,'#394444');for(let j=0;j<5;j++){box(c,center-29+j*13,29,7,13,'#9d9a7d');box(c,center-29+j*13,29,7,1,'#c3bb99');box(c,center-29+j*13,41,7,1,'#69746b');}box(c,center-39,27,3,18,'#bcad84');box(c,center+36,27,3,18,'#bcad84');}
 }
@@ -356,7 +356,7 @@ class Game extends Phaser.Scene {
   ];
   for(let i=0;i<waves.length;i++){const w=waves[i]!;if(x>w.at&&!this.spawned.has(i)){this.spawned.add(i);w.types.forEach((type,j)=>this.spawnEnemy(w.at+j*39,type));}}
   if(x>1410&&!this.locked.has(0)){this.locked.add(0);this.banner('SECTION II  /  CITY CENTRE');}
-  if(x>3005&&!this.locked.has(1)){this.locked.add(1);const before=this.health;this.health=Math.min(5,this.health+2);this.banner(this.health>before?'SECTION III  /  CITY HALL  //  +2 HEALTH':'SECTION III  /  CITY HALL');if(this.health>before){this.fx(this.player.x,this.player.y-10,'pickup');AudioBus.play(560,.1,'triangle',.035);}}
+  if(x>3005&&!this.locked.has(1)){this.locked.add(1);const before=this.health;this.health=Math.min(5,this.health+3);this.banner(this.health>before?'SECTION III  /  CITY HALL  //  +3 HEALTH':'SECTION III  /  CITY HALL');if(this.health>before){this.fx(this.player.x,this.player.y-10,'pickup');AudioBus.play(560,.1,'triangle',.035);}}
   if(x>3995&&!this.locked.has(2)){this.locked.add(2);this.startBoss();}
  }
  spawnEnemy(x:number,type:string){const side=this.rand()<.32?-1:1;const spawnX=x+(side<0?-200:220),key=type==='runner'?'arc-zombie-4':type==='shambler'?'arc-zombie-0':'spitter-0';const e=this.hostiles.get(spawnX,FLOOR-22,key) as AnySprite|null;if(!e)return;e.setActive(true).setVisible(true).setDepth(9).setCollideWorldBounds(true).setGravityY(680).setVelocityX(0);if(type==='spitter')e.setScale(1.25).setSize(17,29).setOffset(3,3);else e.setScale(1).setSize(24,44).setOffset(20,10);const body=e.body as Phaser.Physics.Arcade.Body;body.enable=true;body.allowGravity=true;body.reset(spawnX,FLOOR-22);body.setMaxVelocity(220,520);e.setData({kind:type,hp:type==='shambler'?4:type==='runner'?2:3,attack:0,frame:0,hit:0,hitUntil:0,climbAt:0,state:'stalk',dead:false});}

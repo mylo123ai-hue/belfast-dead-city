@@ -51,6 +51,7 @@ try {
   const environmentGeometry = await page.evaluate(() => {
     const g = window.__belfast.scene('Game');
     return { roadWidth: g.textures.get('street-surface').getSourceImage().width,
+      asphaltWidth: g.textures.get('wet-asphalt').getSourceImage().width, asphaltHeight: g.textures.get('wet-asphalt').getSourceImage().height,
       backdropWidth: g.textures.get('game-panorama').getSourceImage().width,
       backdropSamples: [0,240,479,480,500,508,959,960,1450,2400,3000,3500,4000,4480,4979].map((x) => {
         const d = g.textures.get('game-panorama').getSourceImage().getContext('2d').getImageData(x,100,1,1).data;
@@ -63,7 +64,8 @@ try {
         up: p.body.checkCollision.up, down: p.body.checkCollision.down,
         left: p.body.checkCollision.left, right: p.body.checkCollision.right })) };
   });
-  if (environmentGeometry.roadWidth !== 4980 || environmentGeometry.backdropWidth !== 4980 || environmentGeometry.backdropPanelAlpha.some((alpha) => alpha === 0) ||
+  if (environmentGeometry.roadWidth !== 4980 || environmentGeometry.asphaltWidth !== 4980 || environmentGeometry.asphaltHeight !== 45 ||
+      environmentGeometry.backdropWidth !== 4980 || environmentGeometry.backdropPanelAlpha.some((alpha) => alpha === 0) ||
       environmentGeometry.platforms.some((p) => p.top !== p.artworkTop || p.width !== p.artworkWidth - 14 ||
         !p.up || p.down || p.left || p.right)) throw new Error(`Road or platform geometry mismatch: ${JSON.stringify(environmentGeometry)}`);
   await page.keyboard.press('F2');
