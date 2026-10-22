@@ -43,6 +43,8 @@ import platformWall from './assets/platform-wall.png';
 import wetAsphaltArt from './assets/belfast-wet-asphalt.png';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
+const RESIDENTIAL_END=1450;
+const V5_BENCHMARK=new URLSearchParams(location.search).get('benchmark')==='v5';
 // Vehicle landmarks use image-local coordinates; the collision shape derives
 // from the same landmarks so visual and physics roof anchors cannot drift.
 export const V5_TAXI_ART_ANCHORS = Object.freeze({
@@ -123,7 +125,8 @@ class Boot extends Phaser.Scene {
   const wetAsphalt=s.textures.get('wet-asphalt').getSourceImage() as CanvasImageSource;
   canvasTex(s,'street-surface',WORLD,59,c=>drawStreetSurface(c,wetAsphalt));
   composeBackdrop(s);
-  this.scene.start(new URLSearchParams(location.search).has('benchmark')?'Benchmark':'Title');
+  const benchmark=new URLSearchParams(location.search).get('benchmark');
+  this.scene.start(benchmark==='v5'?'Game':benchmark?'Benchmark':'Title');
  }
 }
 function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSource){
@@ -155,7 +158,7 @@ function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSour
  // The residential side street meets the playable road at x=1450. Cut the
  // kerb at the crossing, flare the stone ramps and carry the alley's wet sheen
  // into the playable surface so the two planes read as one junction.
- const residentialJunction=1450;
+ const residentialJunction=1224;
  box(c,residentialJunction-15,7,30,6,'#202b2c');
  c.fillStyle='#b3a27c';c.beginPath();c.moveTo(residentialJunction-34,8);c.lineTo(residentialJunction-15,8);c.lineTo(residentialJunction-15,14);c.lineTo(residentialJunction-28,14);c.closePath();c.fill();
  c.beginPath();c.moveTo(residentialJunction+34,8);c.lineTo(residentialJunction+15,8);c.lineTo(residentialJunction+15,14);c.lineTo(residentialJunction+28,14);c.closePath();c.fill();
@@ -169,10 +172,9 @@ function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSour
 }
 function composeBackdrop(scene:Phaser.Scene){
  const tex=scene.textures.createCanvas('game-panorama',WORLD,H)!;const ctx=tex.getContext();
- // The opening street borrows two different stretches from the V2 terrace
- // painting. The third residential stretch is authored as a corner and side
- // road, rather than repeating the full V2 taxi/shop composition.
- const panels:[string,number,number][]=[['street-east',0,480],['centre-east',480,480],['residential-junction',960,480],['centre-west',1690,480],['centre-east',2170,480],['city-centre-art',1210,480],['city-centre-art',2650,480],['city-centre-art',3130,480],['hall-west',3610,480],['hall-west',3770,480],['city-hall-art',4250,480],['city-hall-art',4730,500]];
+ // The opening street uses distinct original painted Belfast scenes. Their
+ // lower street lines align with the continuous playable road below.
+ const panels:[string,number,number][]=[['street-east',0,480],['centre-east',480,480],['city-centre-art',960,480],['centre-west',1440,480],['centre-east',1920,480],['city-centre-art',2400,480],['city-centre-art',2880,480],['hall-west',3360,480],['hall-west',3520,480],['city-hall-art',4000,480],['city-hall-art',4480,500]];
  for(let i=0;i<panels.length;i++){
   const [key,x,width]=panels[i]!;
   if(key==='residential-junction'){drawResidentialJunction(ctx,x);continue;}
@@ -355,7 +357,8 @@ class Game extends Phaser.Scene {
  constructor(){super('Game');}
  create(){
   this.resetRun();this.physics.world.isPaused=false;
-  this.physics.world.setBounds(0,0,WORLD,FLOOR+45);
+  const activeWorld=V5_BENCHMARK?RESIDENTIAL_END:WORLD;
+  this.physics.world.setBounds(0,0,activeWorld,FLOOR+45);
   this.add.image(0,0,'boss-sky').setOrigin(0).setScrollFactor(.12).setDepth(-20);
   this.add.image(0,0,'scenery').setOrigin(0).setDepth(-10);
   const far=new Phaser.GameObjects.TileSprite(this,0,0,WORLD,140,'scenery'); far.setOrigin(0).setPosition(0,72).setTileScale(1.8).setAlpha(.14).setDepth(-9);this.add.existing(far); far.setScrollFactor(.35,0);
@@ -365,15 +368,15 @@ class Game extends Phaser.Scene {
   this.player=this.physics.add.sprite(80,FLOOR-22,'arc-player-0').setDepth(8).setCollideWorldBounds(true).setGravityY(680).setSize(23,44).setOffset(20,10).setMaxVelocity(205,520);
   this.bullets=this.physics.add.group({defaultKey:'bullet',maxSize:28});this.hostiles=this.physics.add.group({maxSize:24});this.hostileShots=this.physics.add.group({defaultKey:'acid',maxSize:16});this.grenades=this.physics.add.group({defaultKey:'grenade',maxSize:5});this.effects=this.physics.add.group({maxSize:50});
   this.physics.add.overlap(this.bullets,this.hostiles,this.hitEnemy,undefined,this);this.physics.add.overlap(this.player,this.hostiles,this.touchEnemy,undefined,this);this.physics.add.overlap(this.player,this.hostileShots,this.hitPlayer,undefined,this);
-  this.cameras.main.setBounds(0,0,WORLD,H).startFollow(this.player,true,.11,.1).setDeadzone(120,40);
+  this.cameras.main.setBounds(0,0,activeWorld,H).startFollow(this.player,true,.11,.1).setDeadzone(120,40);
   this.keys=Object.fromEntries(['A','D','W','SPACE','J','K','P','ESC','M','ENTER','R','F2'].map(k=>[k,this.input.keyboard!.addKey(k)])) as Record<string,Phaser.Input.Keyboard.Key>;
   this.debugEnabled=new URLSearchParams(location.search).has('debug');this.collisionDebug=this.add.graphics().setDepth(96).setVisible(this.debugEnabled);
   this.makeHUD();
-  const ground=this.physics.add.staticImage(WORLD/2,FLOOR+24,'bullet').setVisible(false).setDisplaySize(WORLD,48).refreshBody();this.ground=(ground.body as Phaser.Physics.Arcade.StaticBody);
+  const ground=this.physics.add.staticImage(activeWorld/2,FLOOR+24,'bullet').setVisible(false).setDisplaySize(activeWorld,48).refreshBody();this.ground=(ground.body as Phaser.Physics.Arcade.StaticBody);
   this.physics.add.collider(this.player,ground);this.physics.add.collider(this.hostiles,ground);
   this.platforms=this.physics.add.staticGroup();
   this.placePlatform(365,'platform-taxi',120,58);this.placePlatform(805,'platform-wall',100,44);
-  this.placePlatform(1210,'platform-shelter',90,64);this.placePlatform(1810,'platform-taxi',120,58);
+  this.placePlatform(V5_BENCHMARK?1330:1210,'platform-shelter',90,64);this.placePlatform(1810,'platform-taxi',120,58);
   this.placePlatform(2495,'platform-wall',100,44);this.placePlatform(2910,'platform-taxi',120,58);
   this.physics.add.collider(this.player,this.platforms);this.physics.add.collider(this.hostiles,this.platforms);
   this.physics.add.collider(this.grenades,ground);this.physics.add.collider(this.grenades,this.platforms);
@@ -427,7 +430,7 @@ class Game extends Phaser.Scene {
  }
  setPaused(value:boolean){this.paused=value;this.physics.world.isPaused=value;this.time.timeScale=value?0:1;this.tweens.timeScale=value?0:1;this.updateHud();}
  showOverlay(title:string,sub:string){this.overlay.removeAll(true);this.overlay.setVisible(true).setData('state',title==='PAUSED'?'PAUSED':title==='BELFAST STANDS'?'WIN':'DOWN');this.overlay.add(this.add.rectangle(0,0,288,94,0x11191a,.95).setStrokeStyle(1,0xa98c57).setInteractive({useHandCursor:true}).on('pointerup',()=>this.scene.restart()));this.overlay.add(this.add.text(0,-19,title,{fontFamily:'Arial Black, sans-serif',fontSize:'19px',fontStyle:'bold',color:'#e0ad5e',stroke:'#322820',strokeThickness:2}).setOrigin(.5));this.overlay.add(this.add.text(0,17,sub,{fontFamily:'monospace',fontSize:'7px',color:'#e1dfcc',letterSpacing:1}).setOrigin(.5));}
- sectionAt(x:number){return x<1450?'RESIDENTIAL BELFAST':x<3050?'CITY CENTRE':'CITY HALL';}
+ sectionAt(x:number){return V5_BENCHMARK||x<=RESIDENTIAL_END?'RESIDENTIAL BELFAST':x<3050?'CITY CENTRE':'CITY HALL';}
  rand(){this.rng=(this.rng*1664525+1013904223)>>>0;return this.rng/4294967296;}
  update(_t:number,dt:number){
   if(this.health<=0||this.complete)return;if(this.paused)return;
@@ -458,6 +461,7 @@ class Game extends Phaser.Scene {
  fire(){if(this.elapsed*1000-this.lastFire<130)return;this.lastFire=this.elapsed*1000;const dir=this.player.flipX?-1:1,b=this.bullets.get(this.player.x+dir*23,this.player.y-5,'bullet') as AnySprite|null;if(!b)return;b.setActive(true).setVisible(true).setDepth(12).setFlipX(dir<0);b.body?.reset(b.x,b.y);b.setVelocityX(dir*455);b.setVelocityY(0);(b.body as Phaser.Physics.Arcade.Body).allowGravity=false;b.setData('life',0);this.actionUntil=Math.max(this.actionUntil,this.elapsed*1000+80);this.fx(this.player.x+dir*20,this.player.y-8,'flash');AudioBus.play(500,.035,'square',.035);}
  throwGrenade(){if(!this.ammo||this.elapsed*1000-this.lastGrenade<500)return;this.lastGrenade=this.elapsed*1000;this.actionUntil=this.elapsed*1000+220;this.ammo--;const dir=this.player.flipX?-1:1,g=this.grenades.get(this.player.x+dir*20,this.player.y-5,'grenade') as AnySprite|null;if(g){g.setActive(true).setVisible(true).setDepth(12);g.body?.reset(g.x,g.y);const body=g.body as Phaser.Physics.Arcade.Body;body.enable=true;body.allowGravity=true;body.setGravityY(680);g.setVelocity(dir*155,-280);g.setBounce(.48);g.setData('life',0);}AudioBus.play(140,.1,'triangle',.06);this.updateHud();}
  waveCheck(x:number){
+  if(V5_BENCHMARK)return;
   const waves=[
    {at:390,types:['shambler','shambler','shambler']},{at:700,types:['runner','shambler','shambler']},
    {at:1000,types:['shambler','shambler','shambler','shambler']},{at:1260,types:['runner','shambler','shambler','runner']},
@@ -468,7 +472,7 @@ class Game extends Phaser.Scene {
    {at:3910,types:['runner','runner','spitter']}
   ];
   for(let i=0;i<waves.length;i++){const w=waves[i]!;if(x>w.at&&!this.spawned.has(i)){this.spawned.add(i);w.types.forEach((type,j)=>this.spawnEnemy(w.at+j*39,type));}}
-  if(x>1410&&!this.locked.has(0)){this.locked.add(0);this.banner('SECTION II  /  CITY CENTRE');}
+  if(!V5_BENCHMARK&&x>1410&&!this.locked.has(0)){this.locked.add(0);this.banner('SECTION II  /  CITY CENTRE');}
   if(x>3005&&!this.locked.has(1)){this.locked.add(1);const before=this.health;this.health=Math.min(5,this.health+3);this.banner(this.health>before?'SECTION III  /  CITY HALL  //  +3 HEALTH':'SECTION III  /  CITY HALL');if(this.health>before){this.fx(this.player.x,this.player.y-10,'pickup');AudioBus.play(560,.1,'triangle',.035);}}
   if(x>3995&&!this.locked.has(2)){this.locked.add(2);this.startBoss();}
  }

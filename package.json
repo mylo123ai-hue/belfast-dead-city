@@ -8,9 +8,10 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "node --test",
-    "test:browser": "npm run build && node tests/browser.smoke.mjs && node tests/benchmark.smoke.mjs && node tests/traversal.smoke.mjs",
+    "test:browser": "npm run build && node tests/browser.smoke.mjs && node tests/benchmark.smoke.mjs && node tests/traversal.smoke.mjs && node tests/v5-benchmark.smoke.mjs",
     "record": "npm run build && node tests/record-gameplay.mjs",
-    "record:benchmark": "npm run build && node tests/record-benchmark.mjs"
+    "record:benchmark": "npm run build && node tests/record-benchmark.mjs",
+    "record:v5": "npm run build && node tests/record-v5-benchmark.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
