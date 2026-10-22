@@ -136,24 +136,26 @@ function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSour
  const g=c.createLinearGradient(0,0,0,59);g.addColorStop(0,'#b6a985');g.addColorStop(.12,'#716d5b');g.addColorStop(.22,'#505751');g.addColorStop(.32,'#343e3d');g.addColorStop(1,'#202d30');c.fillStyle=g;c.fillRect(0,0,WORLD,59);
  const hash=(n:number)=>{let v=(n*1664525+1013904223)>>>0;v^=v>>>16;return v/4294967296;};
  // Worn Belfast flagstone, a deep drainage seam, and irregular kerb joints.
- for(let x=0;x<WORLD;x+=8){const n=hash(x);box(c,x,1,7,1,n>.7?'#cabd94':n>.35?'#9a9478':'#797760');box(c,x,2,1,4,'#625f52');if(n>.65)box(c,x+2,5,3,1,'#c0b38d');if(n>.88)box(c,x+5,3,2,1,'#b8a783');}
+ for(let x=0;x<WORLD;x+=8){const n=hash(x);box(c,x,1,7,1,n>.7?'#cabd94':n>.35?'#9a9478':'#797760');box(c,x,2,1,4,'#625f52');if(n>.65)box(c,x+2,5,3,1,'#c0b38d');if(V5_BENCHMARK&&x<RESIDENTIAL_END&&n>.88)box(c,x+5,3,2,1,'#b8a783');}
  box(c,0,7,WORLD,1,'#d5c69b');box(c,0,8,WORLD,4,'#776f5b');box(c,0,8,WORLD,1,'#b7a982');box(c,0,12,WORLD,2,'#2d3635');box(c,0,14,WORLD,45,'#293537');
- for(let x=0;x<WORLD;x+=15){const n=hash(x+47);box(c,x,9,13,3,n>.55?'#9b9271':'#867f66');box(c,x+12,9,1,3,'#554f44');if(n>.72)box(c,x+3,10,5,1,'#b0a580');}
+ for(let x=0;x<WORLD;x+=15){const n=hash(x+47);box(c,x,9,13,3,n>.55?'#9b9271':'#867f66');box(c,x+12,9,1,3,'#554f44');if(V5_BENCHMARK&&x<RESIDENTIAL_END&&n>.72)box(c,x+3,10,5,1,'#b0a580');}
  // One original painted wet-asphalt plate replaces the old flat slab. It spans
  // the whole journey, so road material and reflection patterns do not tile at
  // the neighbourhood transitions.
  c.imageSmoothingEnabled=false;c.drawImage(wetAsphalt,0,14,WORLD,45);
  // Lane paint changes in length and wear through the route; residential marks
  // sit between vehicle platforms and the hand-painted road drains.
- const dashes=[76,382,678,986,1288,1620,1910,2226,2528,2830,3136,3442,3748,4050,4356,4662];
- for(const x of dashes){const w=x<1450?50+(x%3)*7:66;box(c,x,35,w,2,'#89866f');box(c,x+2,35,w-8,1,'#b2a685');for(let j=0;j<Math.floor(w/9);j++)box(c,x+8+j*9,36,4,1,'#646d66');box(c,x+w-5,35,4,1,'#6f776b');}
+ if(V5_BENCHMARK){
+  const dashes=[76,382,678,986,1288,1620,1910,2226,2528,2830,3136,3442,3748,4050,4356,4662];
+  for(const x of dashes){const w=x<1450?50+(x%3)*7:66;box(c,x,35,w,2,'#89866f');box(c,x+2,35,w-8,1,'#b2a685');for(let j=0;j<Math.floor(w/9);j++)box(c,x+8+j*9,36,4,1,'#646d66');box(c,x+w-5,35,4,1,'#6f776b');}
+ }else for(let x=76;x<WORLD;x+=306){box(c,x,35,66,2,'#89866f');box(c,x+2,35,58,1,'#b2a685');for(let j=0;j<6;j++)box(c,x+10+j*8,36,4,1,'#646d66');box(c,x+61,35,4,1,'#6f776b');}
  // V5 residential road treatment: pothole repairs, rain-slick patches and
  // short reflected curb-light streaks preserve the continuous wet-road plate.
  const repairs:Array<[number,number,number,number]>=[[174,46,34,5],[512,52,27,3],[742,22,21,4],[1038,48,39,4],[1230,21,18,3]];
  for(const [x,y,w,h] of repairs){box(c,x,y,w,h,'#1b292b');box(c,x+2,y+1,w-5,1,'#3d4c4b');box(c,x+5,y+h-1,w-10,1,'#687169');}
- for(let i=0;i<30;i++){const x=36+(i*137%1370),y=19+(i*17%30),w=3+(i%7);box(c,x,y,w,1,i%3?'#718079':'#ba925e');if(i%4===0)box(c,x+w-1,y+1,2,1,'#3b5553');}
+ if(V5_BENCHMARK)for(let i=0;i<30;i++){const x=36+(i*137%1370),y=19+(i*17%30),w=3+(i%7);box(c,x,y,w,1,i%3?'#718079':'#ba925e');if(i%4===0)box(c,x+w-1,y+1,2,1,'#3b5553');}
  // Belfast street iron: paired storm drains and occasional manhole covers.
- for(const x of [205,920,1388,1512,2185,3030,3770,4510]){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
+ for(const x of (V5_BENCHMARK?[205,920,1388,1512,2185,3030,3770,4510]:[205,920,1450,2185,3030,3770,4510])){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
  for(let x=370;x<WORLD;x+=907){box(c,x,42,18,6,'#1a2426');box(c,x+1,42,16,1,'#64716e');box(c,x+2,44,12,1,'#344c4b');box(c,x+2,47,12,1,'#111b1c');for(let j=0;j<6;j++)box(c,x+4+j*2,43,1,4,'#798176');}
  // The residential side street meets the playable road at x=1450. Cut the
  // kerb at the crossing, flare the stone ramps and carry the alley's wet sheen
@@ -166,28 +168,38 @@ function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSour
  for(let j=0;j<6;j++){const x=residentialJunction-28+j*11;box(c,x,28,6,15,'#b5ab8a');box(c,x,28,6,1,'#ddd0aa');box(c,x,41,6,1,'#777d70');}
  for(let y=16;y<54;y+=9){box(c,residentialJunction-4,y,2,4,'#a78a5c');box(c,residentialJunction+2,y+2,1,3,'#71827b');}
  // A secondary cross-street farther ahead keeps the older city-centre crossing.
- const center=3030;box(c,center-34,14,68,43,'#232f31');box(c,center-34,14,68,1,'#394444');
- for(let j=0;j<5;j++){box(c,center-29+j*13,29,7,13,'#9d9a7d');box(c,center-29+j*13,29,7,1,'#c3bb99');box(c,center-29+j*13,41,7,1,'#69746b');}
- box(c,center-39,27,3,18,'#bcad84');box(c,center+36,27,3,18,'#bcad84');
+ const crossingCenters=V5_BENCHMARK?[3030]:[1450,3030];
+ for(const center of crossingCenters){box(c,center-34,14,68,43,'#232f31');box(c,center-34,14,68,1,'#394444');
+  for(let j=0;j<5;j++){box(c,center-29+j*13,29,7,13,'#9d9a7d');box(c,center-29+j*13,29,7,1,'#c3bb99');box(c,center-29+j*13,41,7,1,'#69746b');}
+  box(c,center-39,27,3,18,'#bcad84');box(c,center+36,27,3,18,'#bcad84');}
 }
 function composeBackdrop(scene:Phaser.Scene){
  const tex=scene.textures.createCanvas('game-panorama',WORLD,H)!;const ctx=tex.getContext();
  // The opening street uses distinct original painted Belfast scenes. Their
  // lower street lines align with the continuous playable road below.
- const panels:[string,number,number][]=[['street-east',0,480],['centre-east',480,480],['city-centre-art',960,480],['centre-west',1440,480],['centre-east',1920,480],['city-centre-art',2400,480],['city-centre-art',2880,480],['hall-west',3360,480],['hall-west',3520,480],['city-hall-art',4000,480],['city-hall-art',4480,500]];
+ const panels:[string,number,number][] = V5_BENCHMARK
+  ?[['street-east',0,480],['centre-east',480,480],['city-centre-art',960,480],['centre-west',1440,480],['centre-east',1920,480],['city-centre-art',2400,480],['city-centre-art',2880,480],['hall-west',3360,480],['hall-west',3520,480],['city-hall-art',4000,480],['city-hall-art',4480,500]]
+  :[['street-west',0,480],['street-east',480,480],['street-art',960,480],['centre-west',1440,480],['centre-east',1920,480],['city-centre-art',2400,480],['city-centre-art',2880,480],['hall-west',3360,480],['hall-west',3520,480],['city-hall-art',4000,480],['city-hall-art',4480,500]];
  for(let i=0;i<panels.length;i++){
   const [key,x,width]=panels[i]!;
-  if(key==='residential-junction'){drawResidentialJunction(ctx,x);continue;}
+  if(V5_BENCHMARK&&key==='residential-junction'){drawResidentialJunction(ctx,x);continue;}
   const image=scene.textures.get(key).getSourceImage() as CanvasImageSource;
   if(i===0){ctx.drawImage(image,0,0,width,H);continue;}
   // Hard segment boundaries preserve the painted architecture. The prior
   // broad crossfade doubled windows and rooflines where the art did not match.
   ctx.imageSmoothingEnabled=false;
-  if(key==='centre-east'&&x===480){
+  if(V5_BENCHMARK&&key==='centre-east'&&x===480){
    // Its far-left taxi is outside this street view; crop it cleanly so only
    // the distant church and shelter remain as the residential street opens up.
    ctx.drawImage(image,28,0,width-28,H,x,0,width,H);
-  }else ctx.drawImage(image,x,0,width,H);
+  }else if(V5_BENCHMARK)ctx.drawImage(image,x,0,width,H);
+  else{
+   const edge=28,scratch=document.createElement('canvas');scratch.width=width;scratch.height=H;
+   const part=scratch.getContext('2d')!;part.imageSmoothingEnabled=false;part.drawImage(image,0,0,width,H);
+   const mask=document.createElement('canvas');mask.width=width;mask.height=H;const m=mask.getContext('2d')!;
+   const fade=m.createLinearGradient(0,0,edge,0);fade.addColorStop(0,'rgba(255,255,255,0)');fade.addColorStop(1,'rgba(255,255,255,1)');m.fillStyle=fade;m.fillRect(0,0,edge,H);m.fillStyle='#fff';m.fillRect(edge,0,width-edge,H);
+   part.globalCompositeOperation='destination-in';part.drawImage(mask,0,0);part.globalCompositeOperation='source-over';ctx.drawImage(scratch,x,0,width,H);
+  }
  }
  tex.refresh();
 }

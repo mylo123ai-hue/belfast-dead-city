@@ -35,8 +35,8 @@ right-hand bound.
 - **VERIFIED** — V5 browser regression measured ground at `y=225`, taxi roof at
   `y=185`, and taxi roof width 62 logical pixels. Normal keyboard movement
   landed on the roof, crossed it, jumped off, and returned to the road.
-- **VERIFIED** — The V5 browser run reported 15 frame-rate samples, 60–60.6 FPS
-  (median 60.3 FPS) in headless Chromium 154, Linux cloud runner, 1200 × 760
+- **VERIFIED** — The V5 browser run reported 15 frame-rate samples, 59.6–60.7
+  FPS (median 60.4 FPS) in headless Chromium 154, Linux cloud runner, 1200 × 760
   viewport. This runner's frame rate is capped near 60 FPS and is not a
   representative hardware benchmark.
 - **INFERRED** — Visual review of the before/after stills and the recorded camera
@@ -49,9 +49,11 @@ right-hand bound.
 
 ## Scope and remaining limitations
 
-This is one bounded residential benchmark. It reuses and aligns existing
-original painted street panels for the junction and neighboring scene; it does
-not replace artwork across the full game. There is no automated visual
+This is one bounded residential benchmark. Its panorama and added road details
+are enabled only by `?benchmark=v5`; ordinary V4 play retains its previous
+panorama and road rendering. The benchmark reuses and aligns existing original
+painted street panels for the junction and neighboring scene; it does not
+replace artwork across the full game. There is no automated visual
 regression test. The recorded browser run is deterministic smoke evidence, not
 playtesting across real devices or input hardware. No merge, deployment, or
 publication was performed.
