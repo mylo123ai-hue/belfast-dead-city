@@ -43,6 +43,15 @@ import platformWall from './assets/platform-wall.png';
 import wetAsphaltArt from './assets/belfast-wet-asphalt.png';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
+// Art-local one-way support surfaces. The taxi image includes transparent
+// margins above the cab; its roof is a small deck inside the 120x58 artwork.
+// Values are center-relative logical pixels and are shared with traversal
+// collision geometry rather than inferred from the art-box bounds.
+const PLATFORM_ROOFS={
+ 'platform-taxi':{centerOffsetX:-5,topOffsetY:-11,width:62},
+ 'platform-shelter':{centerOffsetX:0,topOffsetY:-31,width:78},
+ 'platform-wall':{centerOffsetX:0,topOffsetY:-22,width:86}
+} as const;
 const playerFrames=[player0,player1,player2,player3,player4,player5,player6,player7];
 const zombieFrames=[zombie0,zombie1,zombie2,zombie3,zombie4,zombie5,zombie6,zombie7];
 const explosionFrames=[explosion0,explosion1,explosion2,explosion3,explosion4,explosion5,explosion6,explosion7];
@@ -282,10 +291,11 @@ class Game extends Phaser.Scene {
  resetRun(){this.health=5;this.ammo=4;this.kills=0;this.elapsed=0;this.jumpBufferedUntil=0;this.coyoteUntil=0;this.lastFire=0;this.lastGrenade=0;this.lastDamage=-10000;this.actionUntil=0;this.wasAirborne=false;this.dying=false;this.paused=false;this.boss=null;this.bossHp=0;this.bossPhase=0;this.bossAtk=0;this.locked.clear();this.spawned.clear();this.complete=false;this.section='RESIDENTIAL BELFAST';this.rng=0xBAADF00D;this.healthIcons=[];this.grenadeIcons=[];}
  placePlatform(x:number,key:string,w:number,h:number){
   const cy=FLOOR-h/2;this.add.image(x,cy,key).setDepth(6);
-  const roof=FLOOR-h;
-  const body=this.physics.add.staticImage(x,roof+2,'bullet').setVisible(false).setDisplaySize(w-14,4).refreshBody();
+  const anchor=PLATFORM_ROOFS[key as keyof typeof PLATFORM_ROOFS]??{centerOffsetX:0,topOffsetY:-h/2,width:w-14};
+  const roof=cy+anchor.topOffsetY;
+  const body=this.physics.add.staticImage(x+anchor.centerOffsetX,roof+2,'bullet').setVisible(false).setDisplaySize(anchor.width,4).refreshBody();
   const collision=body.body as Phaser.Physics.Arcade.StaticBody;collision.checkCollision.down=false;collision.checkCollision.left=false;collision.checkCollision.right=false;
-  body.setData('platform',key);body.setData('artworkWidth',w);body.setData('artworkTop',roof);
+  body.setData('platform',key);body.setData('artworkWidth',w);body.setData('artworkTop',roof);body.setData('roofAnchor',{...anchor,worldX:x+anchor.centerOffsetX,worldY:roof});
   this.platforms.add(body);
  }
  makeHUD(){

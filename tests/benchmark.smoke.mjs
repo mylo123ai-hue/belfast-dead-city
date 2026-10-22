@@ -1,21 +1,23 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
-const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4174'], { stdio: 'ignore' });
+const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4178'], { stdio: 'ignore' });
 let browser;
 try {
   let ready = false;
   for (let i = 0; i < 60; i++) {
-    try { if ((await fetch('http://127.0.0.1:4174')).ok) { ready = true; break; } } catch {}
+    try { if ((await fetch('http://127.0.0.1:4178')).ok) { ready = true; break; } } catch {}
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   if (!ready) throw new Error('Vite preview did not become ready');
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true,
+    ...(existsSync('/usr/bin/chromium') ? { executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] } : {}) });
   const page = await browser.newPage({ viewport: { width: 1200, height: 760 } });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('http://127.0.0.1:4174/?benchmark=1&test=1');
+  await page.goto('http://127.0.0.1:4178/?benchmark=1&test=1');
   await page.waitForFunction(() => window.__belfast?.scene('Benchmark')?.sys.isActive());
   await page.waitForTimeout(650);
   const initial = await page.evaluate(() => {
