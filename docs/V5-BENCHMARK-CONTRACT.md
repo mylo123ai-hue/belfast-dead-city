@@ -20,10 +20,12 @@ The shared taxi artwork key remains `platform-taxi`, loaded from
 `src/assets/platform-taxi.png`. Its contract is `120 × 58` pixels, centered at
 the world-space vehicle origin:
 
-- Ground contact: local `(0, +29)`.
-- Walkable roof surface: center-relative `y ≈ -16` (world `y ≈ 209` when
-  grounded at `y = 225`). The current visual taxi deck spans about image
-  `x = 25..87`; its final interval must be confirmed against the environment
+- Ground contact: center-relative `(0, +29)`; the art-local bottom edge is
+  `y = 58`.
+- Walkable roof surface: art-local `y = 18`, which is center-relative
+  `y = -11`. A taxi grounded on `y = 225` has its artwork center at `y = 196`,
+  so the roof surface is at world `y = 185`. The current visual taxi deck spans
+  about image `x = 25..87`; its final interval must be confirmed against the environment
   workstream's finished art.
 - The traversal workstream owns the roof collision shape and may inset its
   horizontal edges to match the visible roof. The environment workstream owns
