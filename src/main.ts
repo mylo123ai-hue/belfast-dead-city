@@ -43,6 +43,11 @@ import platformWall from './assets/platform-wall.png';
 import wetAsphaltArt from './assets/belfast-wet-asphalt.png';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
+// Shared vehicle art contract for the traversal implementation. Coordinates in
+// `deck` are local to the 120 x 58 taxi artwork's top-left corner.
+export const V5_TAXI_ART_ANCHORS = Object.freeze({
+ width:120,height:58,ground:{x:60,y:58},deck:{left:25,right:87,y:18},
+});
 const playerFrames=[player0,player1,player2,player3,player4,player5,player6,player7];
 const zombieFrames=[zombie0,zombie1,zombie2,zombie3,zombie4,zombie5,zombie6,zombie7];
 const explosionFrames=[explosion0,explosion1,explosion2,explosion3,explosion4,explosion5,explosion6,explosion7];
@@ -123,38 +128,137 @@ function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSour
  // blue-green asphalt and warm stone light used by the original Belfast art.
  const g=c.createLinearGradient(0,0,0,59);g.addColorStop(0,'#b6a985');g.addColorStop(.12,'#716d5b');g.addColorStop(.22,'#505751');g.addColorStop(.32,'#343e3d');g.addColorStop(1,'#202d30');c.fillStyle=g;c.fillRect(0,0,WORLD,59);
  const hash=(n:number)=>{let v=(n*1664525+1013904223)>>>0;v^=v>>>16;return v/4294967296;};
- // Worn flagstone pavement, kerb stones and a dark drainage seam.
- for(let x=0;x<WORLD;x+=8){const n=hash(x);box(c,x,1,7,1,n>.7?'#cabd94':n>.35?'#9a9478':'#797760');box(c,x,2,1,4,'#625f52');if(n>.65)box(c,x+2,5,3,1,'#c0b38d');}
+ // Worn Belfast flagstone, a deep drainage seam, and irregular kerb joints.
+ for(let x=0;x<WORLD;x+=8){const n=hash(x);box(c,x,1,7,1,n>.7?'#cabd94':n>.35?'#9a9478':'#797760');box(c,x,2,1,4,'#625f52');if(n>.65)box(c,x+2,5,3,1,'#c0b38d');if(n>.88)box(c,x+5,3,2,1,'#b8a783');}
  box(c,0,7,WORLD,1,'#d5c69b');box(c,0,8,WORLD,4,'#776f5b');box(c,0,8,WORLD,1,'#b7a982');box(c,0,12,WORLD,2,'#2d3635');box(c,0,14,WORLD,45,'#293537');
- for(let x=0;x<WORLD;x+=15){const n=hash(x+47);box(c,x,9,13,3,n>.55?'#9b9271':'#867f66');box(c,x+12,9,1,3,'#554f44');}
+ for(let x=0;x<WORLD;x+=15){const n=hash(x+47);box(c,x,9,13,3,n>.55?'#9b9271':'#867f66');box(c,x+12,9,1,3,'#554f44');if(n>.72)box(c,x+3,10,5,1,'#b0a580');}
  // One original painted wet-asphalt plate replaces the old flat slab. It spans
  // the whole journey, so road material and reflection patterns do not tile at
  // the neighbourhood transitions.
  c.imageSmoothingEnabled=false;c.drawImage(wetAsphalt,0,14,WORLD,45);
- // Two legible but badly worn lane dashes give the low side-on road a sense of depth.
- for(let x=76;x<WORLD;x+=306){box(c,x,35,66,2,'#89866f');box(c,x+2,35,58,1,'#b2a685');for(let j=0;j<6;j++)box(c,x+10+j*8,36,4,1,'#646d66');box(c,x+61,35,4,1,'#6f776b');}
+ // Lane paint changes in length and wear through the route; residential marks
+ // sit between vehicle platforms and the hand-painted road drains.
+ const dashes=[76,382,678,986,1288,1620,1910,2226,2528,2830,3136,3442,3748,4050,4356,4662];
+ for(const x of dashes){const w=x<1450?50+(x%3)*7:66;box(c,x,35,w,2,'#89866f');box(c,x+2,35,w-8,1,'#b2a685');for(let j=0;j<Math.floor(w/9);j++)box(c,x+8+j*9,36,4,1,'#646d66');box(c,x+w-5,35,4,1,'#6f776b');}
+ // V5 residential road treatment: pothole repairs, rain-slick patches and
+ // short reflected curb-light streaks preserve the continuous wet-road plate.
+ const repairs:Array<[number,number,number,number]>=[[174,46,34,5],[512,52,27,3],[742,22,21,4],[1038,48,39,4],[1230,21,18,3]];
+ for(const [x,y,w,h] of repairs){box(c,x,y,w,h,'#1b292b');box(c,x+2,y+1,w-5,1,'#3d4c4b');box(c,x+5,y+h-1,w-10,1,'#687169');}
+ for(let i=0;i<30;i++){const x=36+(i*137%1370),y=19+(i*17%30),w=3+(i%7);box(c,x,y,w,1,i%3?'#718079':'#ba925e');if(i%4===0)box(c,x+w-1,y+1,2,1,'#3b5553');}
  // Belfast street iron: paired storm drains and occasional manhole covers.
- for(const x of [205,920,1450,2185,3030,3770,4510]){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
+ for(const x of [205,920,1388,1512,2185,3030,3770,4510]){box(c,x,17,20,7,'#202729');box(c,x+1,18,18,1,'#657065');for(let j=0;j<7;j++)box(c,x+3+j*2,19,1,4,'#87907b');box(c,x+1,24,18,1,'#161e20');}
  for(let x=370;x<WORLD;x+=907){box(c,x,42,18,6,'#1a2426');box(c,x+1,42,16,1,'#64716e');box(c,x+2,44,12,1,'#344c4b');box(c,x+2,47,12,1,'#111b1c');for(let j=0;j<6;j++)box(c,x+4+j*2,43,1,4,'#798176');}
- // Painted side-street crossings at the two urban junctions.
- for(const center of [1450,3030]){box(c,center-34,14,68,43,'#232f31');box(c,center-34,14,68,1,'#394444');for(let j=0;j<5;j++){box(c,center-29+j*13,29,7,13,'#9d9a7d');box(c,center-29+j*13,29,7,1,'#c3bb99');box(c,center-29+j*13,41,7,1,'#69746b');}box(c,center-39,27,3,18,'#bcad84');box(c,center+36,27,3,18,'#bcad84');}
+ // The residential side street meets the playable road at x=1450. Cut the
+ // kerb at the crossing, flare the stone ramps and carry the alley's wet sheen
+ // into the playable surface so the two planes read as one junction.
+ const residentialJunction=1450;
+ box(c,residentialJunction-15,7,30,6,'#202b2c');
+ c.fillStyle='#b3a27c';c.beginPath();c.moveTo(residentialJunction-34,8);c.lineTo(residentialJunction-15,8);c.lineTo(residentialJunction-15,14);c.lineTo(residentialJunction-28,14);c.closePath();c.fill();
+ c.beginPath();c.moveTo(residentialJunction+34,8);c.lineTo(residentialJunction+15,8);c.lineTo(residentialJunction+15,14);c.lineTo(residentialJunction+28,14);c.closePath();c.fill();
+ box(c,residentialJunction-33,13,66,44,'#232f31');box(c,residentialJunction-33,14,66,1,'#66736c');
+ for(let j=0;j<6;j++){const x=residentialJunction-28+j*11;box(c,x,28,6,15,'#b5ab8a');box(c,x,28,6,1,'#ddd0aa');box(c,x,41,6,1,'#777d70');}
+ for(let y=16;y<54;y+=9){box(c,residentialJunction-4,y,2,4,'#a78a5c');box(c,residentialJunction+2,y+2,1,3,'#71827b');}
+ // A secondary cross-street farther ahead keeps the older city-centre crossing.
+ const center=3030;box(c,center-34,14,68,43,'#232f31');box(c,center-34,14,68,1,'#394444');
+ for(let j=0;j<5;j++){box(c,center-29+j*13,29,7,13,'#9d9a7d');box(c,center-29+j*13,29,7,1,'#c3bb99');box(c,center-29+j*13,41,7,1,'#69746b');}
+ box(c,center-39,27,3,18,'#bcad84');box(c,center+36,27,3,18,'#bcad84');
 }
 function composeBackdrop(scene:Phaser.Scene){
  const tex=scene.textures.createCanvas('game-panorama',WORLD,H)!;const ctx=tex.getContext();
- const panels:[string,number,number][]=[['street-west',0,480],['street-east',480,480],['street-art',960,480],['centre-west',1440,480],['centre-east',1920,480],['city-centre-art',2400,480],['city-centre-art',2880,480],['hall-west',3360,480],['hall-west',3520,480],['city-hall-art',4000,480],['city-hall-art',4480,500]];
+ // The opening street borrows two different stretches from the V2 terrace
+ // painting. The third residential stretch is authored as a corner and side
+ // road, rather than repeating the full V2 taxi/shop composition.
+ const panels:[string,number,number][]=[['street-east',0,480],['centre-east',480,480],['residential-junction',960,480],['centre-west',1690,480],['centre-east',2170,480],['city-centre-art',1210,480],['city-centre-art',2650,480],['city-centre-art',3130,480],['hall-west',3610,480],['hall-west',3770,480],['city-hall-art',4250,480],['city-hall-art',4730,500]];
  for(let i=0;i<panels.length;i++){
-  const [key,x,width]=panels[i]!,image=scene.textures.get(key).getSourceImage() as CanvasImageSource;
+  const [key,x,width]=panels[i]!;
+  if(key==='residential-junction'){drawResidentialJunction(ctx,x);continue;}
+  const image=scene.textures.get(key).getSourceImage() as CanvasImageSource;
   if(i===0){ctx.drawImage(image,0,0,width,H);continue;}
-  // Blend a narrow strip at each edit so masonry and wet street light do not
-  // terminate at a hard vertical cut. Keep the crossfade local to the seam.
-  const edge=28,scratch=document.createElement('canvas');scratch.width=width;scratch.height=H;
-  const part=scratch.getContext('2d')!;part.imageSmoothingEnabled=false;part.drawImage(image,0,0,width,H);
-  const mask=document.createElement('canvas');mask.width=width;mask.height=H;const m=mask.getContext('2d')!;
-  const fade=m.createLinearGradient(0,0,edge,0);fade.addColorStop(0,'rgba(255,255,255,0)');fade.addColorStop(1,'rgba(255,255,255,1)');m.fillStyle=fade;m.fillRect(0,0,edge,H);m.fillStyle='#fff';m.fillRect(edge,0,width-edge,H);
-  part.globalCompositeOperation='destination-in';part.drawImage(mask,0,0);part.globalCompositeOperation='source-over';
-  ctx.drawImage(scratch,x,0,width,H);
+  // Hard segment boundaries preserve the painted architecture. The prior
+  // broad crossfade doubled windows and rooflines where the art did not match.
+  ctx.imageSmoothingEnabled=false;
+  if(key==='centre-east'&&x===480){
+   // Its far-left taxi is outside this street view; crop it cleanly so only
+   // the distant church and shelter remain as the residential street opens up.
+   ctx.drawImage(image,28,0,width-28,H,x,0,width,H);
+  }else ctx.drawImage(image,x,0,width,H);
  }
  tex.refresh();
+}
+function drawResidentialJunction(c:CanvasRenderingContext2D,ox:number){
+ const b=(x:number,y:number,w:number,h:number,col:string)=>box(c,ox+x,y,w,h,col);
+ const sky=c.createLinearGradient(0,0,0,205);sky.addColorStop(0,'#142a39');sky.addColorStop(.56,'#33444a');sky.addColorStop(1,'#6b695d');c.fillStyle=sky;c.fillRect(ox,0,480,220);
+ // Distant roofline and the warm windows of the next Belfast terrace.
+ for(let x=0;x<480;x+=31){const h=23+(x*17%37);b(x,157-h,27,h,'#344448');for(let wx=x+4;wx<x+24;wx+=10){b(wx,164-h,4,7,(wx+x)%3?'#b58c56':'#657c77');}}
+ b(6,126,467,2,'#19282c');
+ for(let x=17;x<470;x+=73){b(x,125,2,35,'#263238');b(x-3,124,8,2,'#374347');}
+ // Three deliberately different frontages: a gabled terrace, a boarded end
+ // house, and a corner shop whose blank brick return frames the side street.
+ const house=(x:number,w:number,top:number,variant:number)=>{
+  b(x+3,top+4,w-6,195-top,'#201f20');b(x,top+8,w,187-top,variant%2?'#713f38':'#82483d');
+  b(x-2,top+7,w+4,5,'#ad795e');b(x+2,top+13,3,179-top,'#bd9070');b(x+w-5,top+13,3,179-top,'#4e3935');
+  // Guttered slate roof with a clipped gable and a sooty chimney.
+  c.fillStyle='#26353c';c.beginPath();c.moveTo(ox+x-3,top+9);c.lineTo(ox+x+w*.5,top-15);c.lineTo(ox+x+w+3,top+9);c.closePath();c.fill();
+  c.fillStyle='#3e4a49';c.beginPath();c.moveTo(ox+x+5,top+7);c.lineTo(ox+x+w*.5,top-9);c.lineTo(ox+x+w-5,top+7);c.closePath();c.fill();
+  for(let yy=top-4;yy<top+6;yy+=4)for(let xx=x+8;xx<x+w-8;xx+=9){b(xx,yy,7,1,'#63706a');if((xx+yy)%3===0)b(xx+4,yy+1,2,1,'#202e33');}
+  b(x+5,top+3,w-10,3,'#324047');b(x+11,top-2,w-22,3,'#29383f');
+  b(x+Math.floor(w*.23),top-8,5,11,'#723f38');b(x+Math.floor(w*.23)-2,top-9,9,2,'#b28569');
+  for(let yy=top+20;yy<top+150;yy+=13){
+   b(x+5,yy,w-10,1,'#a46c57');
+   for(let xx=x+8+(yy%26?0:9);xx<x+w-10;xx+=16)b(xx,yy-5,1,5,'#352c2c');
+  }
+  // Varied chips in the brick face keep each terrace from reading as a flat
+  // repeated rectangle at the game's one-pixel scene scale.
+  for(let i=0;i<180;i++){
+   const xx=x+5+(i*37+variant*19)%(w-10),yy=top+15+(i*23+variant*11)%(174-top);
+   if(yy<top+151)b(xx,yy,1+(i%3),1,i%4===0?'#b27459':i%3===0?'#523936':'#8d5143');
+  }
+  for(let row=0;row<3;row++)for(let col=0;col<Math.max(1,Math.floor((w-23)/24));col++){
+   const wx=x+10+col*24+(row%2?3:0),wy=top+22+row*35;
+   b(wx,wy,13,18,'#d2c19a');b(wx+2,wy+2,9,14,variant===1&&row===1?'#273438':'#324348');
+   b(wx+5,wy+2,2,14,variant%2?'#b47d4b':'#7f957d');b(wx-1,wy+17,15,3,'#d1bd91');
+   if((wx+row)%3===0)b(wx+6,wy+5,3,4,'#e7ae56');
+  }
+  b(x+Math.floor(w*.42),top+150,Math.floor(w*.20),45,'#292725');
+  b(x+Math.floor(w*.42)+4,top+154,Math.floor(w*.20)-8,41,'#203638');
+  b(x+7,top+9,2,171-top,'#473a37');b(x+w-9,top+9,2,171-top,'#a06c58');
+  if(variant===1){b(x+12,top+91,15,17,'#302c2a');b(x+14,top+93,11,13,'#4a4440');b(x+10,top+108,19,2,'#bd9c71');}
+ };
+ house(0,132,47,0);house(132,124,65,1);
+ // Narrow shopfront at the corner; no lettering is repeated from the V2 grocer.
+ b(256,91,101,104,'#223234');b(253,86,105,7,'#b39069');b(258,95,96,3,'#d0b27c');
+ b(262,103,42,53,'#bd9164');b(266,107,34,45,'#283b3c');b(308,103,44,53,'#b7a27c');b(312,107,36,45,'#263739');
+ for(let y=113;y<149;y+=12){b(267,y,33,2,'#d2a75e');b(313,y,34,2,'#d0a15b');}
+ b(257,157,96,5,'#a98662');b(258,164,95,31,'#643c34');
+ for(let x=265;x<350;x+=14){b(x,167,8,24,'#304246');b(x+2,169,4,13,(x%3)?'#829083':'#d39a4f');}
+ b(259,158,91,2,'#d2aa68');b(259,193,94,2,'#c49a64');
+ // Door lamps and catches pick out the three-frontage rhythm in the rain.
+ for(const x of [43,172,284,337]){b(x,154,2,14,'#272e2c');b(x-3,151,8,4,'#d89a49');b(x-2,152,6,2,'#f2c46f');}
+ // Railings, gate posts and wet ivy break the brick silhouettes at pavement level.
+ for(let x=7;x<248;x+=17){b(x,181,2,16,'#202a2b');b(x,181,7,1,'#7d735d');b(x+5,183,1,13,'#303737');}
+ for(let i=0;i<70;i++){const x=5+(i*29%244),y=154+(i*17%34);b(x,y,2+(i%3),2,i%4===0?'#d3ad4e':i%2?'#324538':'#4d684a');}
+ // Overhead wires and a warm street lamp bridge the image segment boundary.
+ c.strokeStyle='#17242a';c.lineWidth=1;c.beginPath();c.moveTo(ox+3,55);c.quadraticCurveTo(ox+219,80,ox+476,49);c.stroke();
+ c.beginPath();c.moveTo(ox+84,59);c.quadraticCurveTo(ox+265,92,ox+452,56);c.stroke();
+ b(238,99,3,96,'#222d31');b(232,99,15,3,'#323c3a');b(235,93,9,6,'#d9a34e');b(237,94,5,4,'#f2c268');
+ // Side-road opening recedes between brick returns. The lane aligns at the
+ // right edge with the cross-street in the continuous playable road below.
+ b(357,95,4,100,'#382e2b');b(465,84,5,111,'#43332d');
+ c.fillStyle='#253437';c.beginPath();c.moveTo(ox+361,174);c.lineTo(ox+465,174);c.lineTo(ox+480,211);c.lineTo(ox+350,211);c.closePath();c.fill();
+ c.fillStyle='#39474a';c.beginPath();c.moveTo(ox+374,166);c.lineTo(ox+453,166);c.lineTo(ox+480,211);c.lineTo(ox+350,211);c.closePath();c.fill();
+ // Receding cobble glints and kerb cuts make the alley read as a road, not a
+ // dark facade gap. The horizontal street plate starts at y=211 beneath it.
+ for(let i=0;i<10;i++){const y=177+i*3.2,w=10+i*7,x=415-w/2;b(x,y,w,1,i%2?'#78806f':'#b08a58');}
+ b(349,205,131,2,'#d0bc92');b(349,208,131,2,'#657269');
+ // A small Belfast taxi sits in the far depth at half scale, grounded at the
+ // alley mouth, well away from the foreground vehicle roof platforms.
+ const tx=444,ty=173,s=.52;
+ const sb=(x:number,y:number,w:number,h:number,col:string)=>b(tx+x*s,ty+y*s,w*s,h*s,col);
+ sb(3,34,66,3,'#121a1b');sb(9,20,54,15,'#1a2224');sb(19,12,31,13,'#202a2c');
+ sb(22,14,12,9,'#71817a');sb(36,14,11,9,'#a08b67');sb(7,30,58,5,'#47534f');
+ sb(14,33,10,8,'#151a1b');sb(52,33,10,8,'#151a1b');sb(27,9,12,3,'#d0b879');
+ // Rainlit reflections fade into the alley depth, distinct from the playable road.
+ for(let i=0;i<22;i++){const x=354+(i*37%118),y=199+(i*11%10);b(x,y,5+(i%4)*3,1,i%3?'#54625e':'#a68b5a');}
 }
 function drawSky(c:CanvasRenderingContext2D){
  const g=c.createLinearGradient(0,0,0,270);g.addColorStop(0,'#182c35');g.addColorStop(.6,'#52605c');g.addColorStop(1,'#9a8a70');c.fillStyle=g;c.fillRect(0,0,WORLD,270);
