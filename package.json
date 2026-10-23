@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "node --test",
     "test:browser": "npm run build && node tests/browser.smoke.mjs",
+    "test:physics": "npm run build && node tests/physics.benchmark.mjs",
     "record": "npm run build && node tests/record-gameplay.mjs"
   },
   "dependencies": {

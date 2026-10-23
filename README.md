@@ -30,9 +30,12 @@ npm ci
 npm test
 npm run build
 npm run preview
+npm run test:physics
 ```
 
-The static build is written to `dist/`. `npm run build` runs the TypeScript project check before creating the production site. The GitHub Actions verification workflow runs the unit checks and Playwright smoke test, then stores `dist` as an artifact; it does not publish or deploy.
+The static build is written to `dist/`. `npm run build` runs the TypeScript project check before creating the production site. The GitHub Actions verification workflow runs unit checks, the Playwright smoke test, and the V6 physics benchmark, then stores the build and benchmark artifacts; it does not publish or deploy.
+
+`npm run test:physics` runs a keyboard-controlled Playwright benchmark against the production build. It checks movement, jump buffering and coyote time, car and shelter traversal, obstacle movement, damage cooldown, camera scrolling, and Arcade Physics at 30 and 120 Hz. Screenshots, measurements, and a WebM recording are written to `artifacts/v6/`.
 
 ## Gameplay recording
 
@@ -59,6 +62,10 @@ The deploy workflow runs only when manually dispatched; pushes run verification 
 ![Victory screen](artifacts/victory-screen.png)
 
 [Watch the gameplay recording](artifacts/gameplay-run.webm)
+
+[Watch the V6 keyboard physics benchmark](artifacts/v6/keyboard-benchmark.webm)
+
+[View V6 physics measurements and limitations](docs/v6-physics-benchmark.md)
 
 ## Notes
 

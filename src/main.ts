@@ -153,7 +153,7 @@ class AudioBus{
 
 class Game extends Phaser.Scene {
  player!:AnySprite; bullets!:Phaser.Physics.Arcade.Group; hostiles!:Phaser.Physics.Arcade.Group; hostileShots!:Phaser.Physics.Arcade.Group; grenades!:Phaser.Physics.Arcade.Group; effects!:Phaser.Physics.Arcade.Group;
- keys!:Record<string,Phaser.Input.Keyboard.Key>; health=5; ammo=4; kills=0; elapsed=0; jumpBufferedUntil=0; lastFire=0; lastGrenade=0; lastDamage=0; paused=false; muted=false; boss:Phaser.Physics.Arcade.Sprite|null=null; bossHp=0; bossPhase=0; bossAtk=0; locked=new Set<number>(); complete=false; ground!:Phaser.Physics.Arcade.StaticBody; spawned:Set<number>=new Set(); hud!:Phaser.GameObjects.Container; section='RESIDENTIAL BELFAST'; sectionText!:Phaser.GameObjects.Text; centerText!:Phaser.GameObjects.Text; overlay!:Phaser.GameObjects.Container; hudText!:Phaser.GameObjects.Text; healthIcons:Phaser.GameObjects.Image[]=[]; grenadeIcons:Phaser.GameObjects.Image[]=[]; bossBar!:Phaser.GameObjects.Rectangle; bossBarBg!:Phaser.GameObjects.Rectangle; prompt!:Phaser.GameObjects.Text; rng=0xBAADF00D;
+ keys!:Record<string,Phaser.Input.Keyboard.Key>; health=5; ammo=4; kills=0; elapsed=0; jumpBufferedUntil=0; lastGroundedAt=-Infinity; lastFire=0; lastGrenade=0; lastDamage=-Infinity; paused=false; muted=false; boss:Phaser.Physics.Arcade.Sprite|null=null; bossHp=0; bossPhase=0; bossAtk=0; locked=new Set<number>(); complete=false; ground!:Phaser.Physics.Arcade.StaticBody; platforms!:Phaser.Physics.Arcade.StaticGroup; spawned:Set<number>=new Set(); hud!:Phaser.GameObjects.Container; section='RESIDENTIAL BELFAST'; sectionText!:Phaser.GameObjects.Text; centerText!:Phaser.GameObjects.Text; overlay!:Phaser.GameObjects.Container; hudText!:Phaser.GameObjects.Text; healthIcons:Phaser.GameObjects.Image[]=[]; grenadeIcons:Phaser.GameObjects.Image[]=[]; bossBar!:Phaser.GameObjects.Rectangle; bossBarBg!:Phaser.GameObjects.Rectangle; prompt!:Phaser.GameObjects.Text; rng=0xBAADF00D;
  constructor(){super('Game');}
  create(){
   this.resetRun();
@@ -174,6 +174,10 @@ class Game extends Phaser.Scene {
   this.makeHUD();
   const ground=this.physics.add.staticImage(WORLD/2,FLOOR+24,'bullet').setVisible(false).setDisplaySize(WORLD,48).refreshBody();this.ground=(ground.body as Phaser.Physics.Arcade.StaticBody);
   this.physics.add.collider(this.player,ground);this.physics.add.collider(this.hostiles,ground);
+  this.createTraversalPlatforms();
+  this.physics.add.collider(this.bullets,ground,this.destroyOnImpact,undefined,this);
+  this.physics.add.collider(this.player,this.platforms);this.physics.add.collider(this.hostiles,this.platforms,this.enemyBlocked,undefined,this);this.physics.add.collider(this.bullets,this.platforms,this.destroyOnImpact,undefined,this);this.physics.add.collider(this.grenades,this.platforms);
+  this.physics.add.collider(this.grenades,ground);
 
   this.input.keyboard!.on('keydown-M',()=>{AudioBus.toggle();this.updateHud();});
   this.input.keyboard!.on('keydown-ESC',()=>{this.paused=!this.paused;this.updateHud();});
@@ -182,7 +186,27 @@ class Game extends Phaser.Scene {
   this.time.addEvent({delay:12500,loop:true,callback:()=>this.ambientFx()});
   this.updateHud();
  }
- resetRun(){this.health=5;this.ammo=4;this.kills=0;this.elapsed=0;this.jumpBufferedUntil=0;this.lastFire=0;this.lastGrenade=0;this.lastDamage=0;this.paused=false;this.boss=null;this.bossHp=0;this.bossPhase=0;this.bossAtk=0;this.locked.clear();this.spawned.clear();this.complete=false;this.section='RESIDENTIAL BELFAST';this.rng=0xBAADF00D;this.healthIcons=[];this.grenadeIcons=[];}
+ resetRun(){this.health=5;this.ammo=4;this.kills=0;this.elapsed=0;this.jumpBufferedUntil=0;this.lastGroundedAt=-Infinity;this.lastFire=0;this.lastGrenade=0;this.lastDamage=-Infinity;this.paused=false;this.boss=null;this.bossHp=0;this.bossPhase=0;this.bossAtk=0;this.locked.clear();this.spawned.clear();this.complete=false;this.section='RESIDENTIAL BELFAST';this.rng=0xBAADF00D;this.healthIcons=[];this.grenadeIcons=[];}
+ createTraversalPlatforms(){
+  this.platforms=this.physics.add.staticGroup();
+  // Collide against the four wrecked taxi roofs already painted into the scenery texture.
+  for(const x of [510,1140,2040,3160]){this.addTraversalPlatform(x+34,190,68,6,false);this.addTraversalPlatform(x+3,207,6,34,false);this.addTraversalPlatform(x+65,207,6,34,false);}
+  // Simple Belfast-style shelters give the route visible, reachable raised ground.
+  for(const x of [820,2480,3650]){
+   this.add.rectangle(x,FLOOR-37,82,4,0x7a7769).setDepth(4);
+   this.add.rectangle(x-37,FLOOR-19,3,36,0x666f68,.9).setDepth(4);
+   this.add.rectangle(x+37,FLOOR-19,3,36,0x666f68,.9).setDepth(4);
+   this.add.rectangle(x,FLOOR-19,69,31,0x526362,.22).setStrokeStyle(1,0x929381,.8).setDepth(3);
+   this.add.rectangle(x,FLOOR-4,45,3,0x534a3d).setDepth(4);
+   this.addTraversalPlatform(x,FLOOR-37,78,6,true);this.addTraversalPlatform(x-37,FLOOR-20,4,40,false);this.addTraversalPlatform(x+37,FLOOR-20,4,40,false);
+  }
+ }
+ addTraversalPlatform(x:number,y:number,width:number,height:number,visible:boolean){
+  const surface=this.add.rectangle(x,y,width,height,0x9a8765,visible?1:0).setDepth(5);
+  this.physics.add.existing(surface,true);this.platforms.add(surface);
+ }
+ destroyOnImpact(first:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,second:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const projectile=(((first as AnySprite).body as Phaser.Physics.Arcade.Body|undefined)?.moves?first:second) as AnySprite;projectile.destroy();}
+ enemyBlocked(first:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,second:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const e=((((first as AnySprite).body as Phaser.Physics.Arcade.Body|undefined)?.moves?first:second)) as AnySprite,b=e.body as Phaser.Physics.Arcade.Body;if((b.blocked.left||b.blocked.right||b.touching.left||b.touching.right)&&b.velocity.y>=0){e.setVelocityY(-255);}}
  makeHUD(){
   const hud=this.add.container(0,0).setScrollFactor(0).setDepth(100);this.hud=hud;
   hud.add(this.add.rectangle(0,0,W,36,0x101719,.94).setOrigin(0));hud.add(this.add.rectangle(0,36,W,1,0x897b61,.75).setOrigin(0));
@@ -209,12 +233,19 @@ class Game extends Phaser.Scene {
  rand(){this.rng=(this.rng*1664525+1013904223)>>>0;return this.rng/4294967296;}
  update(_t:number,dt:number){
   if(this.health<=0||this.complete)return;if(this.paused)return;
-  const d=Math.min(dt,40);this.elapsed+=d/1000;const x=this.player.x;this.section=this.sectionAt(x);
-  if(this.keys.A.isDown||this.keys.D.isDown){const dir=this.keys.A.isDown?-1:1;this.player.setVelocityX(dir*(this.keys.A.isDown&&this.keys.D.isDown?0:128));this.player.setFlipX(dir<0);}else this.player.setVelocityX(this.player.body!.velocity.x*.78);
-  if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)||Phaser.Input.Keyboard.JustDown(this.keys.W))this.jumpBufferedUntil=this.elapsed*1000+130;
-  if(this.elapsed*1000<this.jumpBufferedUntil&&(this.player.body as Phaser.Physics.Arcade.Body).blocked.down){this.jumpBufferedUntil=0;this.player.setVelocityY(-305);AudioBus.play(330,.07,'triangle',.03);}
+  const d=Math.min(dt,40),now=this.elapsed*1000+d;this.elapsed+=d/1000;const x=this.player.x;this.section=this.sectionAt(x);
+  const body=this.player.body as Phaser.Physics.Arcade.Body, grounded=body.blocked.down||body.touching.down;
+  if(grounded)this.lastGroundedAt=now;
+  const left=this.keys.A.isDown,right=this.keys.D.isDown,dir=left===right?0:left?-1:1;
+  if(dir)this.player.setFlipX(dir<0);
+  const target=dir*128,current=body.velocity.x,rate=dir?(Math.sign(current)&&Math.sign(current)!==dir?1750:900):1450;
+  const step=rate*d/1000;this.player.setVelocityX(Math.abs(target-current)<=step?target:current+Math.sign(target-current)*step);
+  if(Phaser.Input.Keyboard.JustDown(this.keys.SPACE)||Phaser.Input.Keyboard.JustDown(this.keys.W))this.jumpBufferedUntil=now+140;
+  const canJump=grounded||now-this.lastGroundedAt<=150;
+  if(now<=this.jumpBufferedUntil&&canJump){this.jumpBufferedUntil=0;this.lastGroundedAt=-Infinity;this.player.setVelocityY(-320);AudioBus.play(330,.07,'triangle',.03);}
+  if((Phaser.Input.Keyboard.JustUp(this.keys.SPACE)||Phaser.Input.Keyboard.JustUp(this.keys.W))&&body.velocity.y<-120)this.player.setVelocityY(-120);
   if(Phaser.Input.Keyboard.JustDown(this.keys.J))this.fire();if(Phaser.Input.Keyboard.JustDown(this.keys.K))this.throwGrenade();
-  this.animatePlayer();this.waveCheck(x);this.updateEnemies(d);this.updateObjects();this.updateBoss(d);this.updateHud();
+  this.animatePlayer();this.waveCheck(x);this.updateEnemies(d);this.updateObjects(d);this.updateBoss(d);this.updateHud();
  }
  animatePlayer(){const v=Math.abs(this.player.body!.velocity.x);const f=Math.floor(this.elapsed*11)%4;let ix=0;if(this.player.body!.velocity.y<-30)ix=1;else if(v>12)ix=[0,1,2,1][f];if(this.elapsed*10%3<1)ix=2;this.player.setTexture(`player-${ix}`);}
  fire(){if(this.elapsed*1000-this.lastFire<180)return;this.lastFire=this.elapsed*1000;const dir=this.player.flipX?-1:1,b=this.bullets.get(this.player.x+dir*17,this.player.y-2,'bullet') as AnySprite|null;if(!b)return;b.setActive(true).setVisible(true).setDepth(12).setFlipX(dir<0);b.body?.reset(b.x,b.y);b.setVelocityX(dir*430);b.setVelocityY(0);(b.body as Phaser.Physics.Arcade.Body).allowGravity=false;b.setData('life',0);this.fx(this.player.x+dir*13,this.player.y-5,'flash');AudioBus.play(500,.035,'square',.035);}
@@ -238,7 +269,7 @@ class Game extends Phaser.Scene {
  killEnemy(e:AnySprite){e.disableBody(true,true);this.kills++;this.fx(e.x,e.y-5,'death');AudioBus.play(100,.16,'triangle',.04);if(this.rand()<.16&&this.ammo<4){this.ammo++;this.fx(e.x,e.y-14,'pickup');}}
  touchEnemy(_p:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,e:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){this.damage(1,(e as AnySprite).x);}
  hitPlayer(p:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){(p as AnySprite).destroy();this.damage(1,this.player.x);}
- damage(n:number,x:number){if(this.elapsed*1000-this.lastDamage<1100||this.health<=0)return;this.lastDamage=this.elapsed*1000;this.health=Math.max(0,this.health-n);this.player.setTintFill(0xffffff);this.time.delayedCall(120,()=>this.player.clearTint());this.cameras.main.shake(160,.008);AudioBus.play(75,.18,'sawtooth',.055);this.fx(x,this.player.y,'hit');this.updateHud();}
+ damage(n:number,x:number){const now=this.elapsed*1000;if(now-this.lastDamage<1100||this.health<=0)return;this.lastDamage=now;this.health=Math.max(0,this.health-n);const away=Math.sign(this.player.x-x)||(this.player.flipX?1:-1);this.player.setVelocityX(away*145);const body=this.player.body as Phaser.Physics.Arcade.Body;if(body.blocked.down||body.touching.down)this.player.setVelocityY(-105);this.player.setTintFill(0xffffff);this.time.delayedCall(120,()=>this.player.clearTint());this.cameras.main.shake(160,.008);AudioBus.play(75,.18,'sawtooth',.055);this.fx(x,this.player.y,'hit');this.updateHud();}
  hitBoss(b:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile,_bb:Phaser.Types.Physics.Arcade.GameObjectWithBody|Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.Tilemaps.Tile){const bullet=b as AnySprite;if(!bullet.active||!this.boss?.active)return;bullet.destroy();this.bossHp--;this.boss?.setTintFill(0xffffff);this.time.delayedCall(90,()=>this.boss?.clearTint());this.fx(this.boss!.x+(this.rand()-.5)*35,this.boss!.y-5,'hit');this.cameras.main.shake(65,.002);this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss!.setTint(0x83a276);this.updateBossHud();}else this.win();}}
  startBoss(){this.banner('THE CITY HALL // SOMETHING STIRS');this.boss=this.physics.add.sprite(4320,FLOOR-44,'zombie-large-0').setDepth(10).setCollideWorldBounds(true).setGravityY(680).setSize(45,69).setOffset(13,12);this.boss.setScale(1.1);this.bossHp=46;this.bossPhase=0;this.physics.add.overlap(this.bullets,this.boss,this.hitBoss,undefined,this);this.physics.add.collider(this.boss,this.ground.gameObject);this.bossAtk=this.elapsed*1000;this.bossBarBg.setVisible(true);this.bossBar.setVisible(true);this.updateBossHud();this.cameras.main.shake(500,.009);AudioBus.play(48,.5,'sawtooth',.06);}
  updateBossHud(){if(!this.boss)return;const max=this.bossPhase===0?46:30;this.bossBar.width=Math.max(0,210*this.bossHp/max);this.bossBar.setFillStyle(this.bossPhase===1?0xb7b35e:0xd0523e);}
@@ -253,12 +284,12 @@ class Game extends Phaser.Scene {
   if(kind==='flash'){const im=this.add.image(x,y,'fire-0').setDepth(14);this.tweens.add({targets:im,alpha:0,scaleX:1.5,scaleY:1.5,duration:100,onComplete:()=>im.destroy()});return;}
   const count=kind==='impact'?11:kind==='death'?8:kind==='pickup'?4:4;for(let i=0;i<count;i++){const p=this.effects.get(x,y,`smoke-${i%4}`) as AnySprite|null;if(!p)continue;p.setTexture(kind==='impact'?`fire-${i%7}`:`smoke-${i%4}`).setActive(true).setVisible(true).setDepth(14).setScale(kind==='impact'?1.2:.75+this.rand()*.7);p.body?.reset(x,y);(p.body as Phaser.Physics.Arcade.Body).allowGravity=true;p.setVelocity((this.rand()-.5)*(kind==='impact'?180:100),-this.rand()*(kind==='impact'?175:95));p.setData('life',0);}
  }
- updateObjects(){
-  for(const group of [this.bullets,this.grenades,this.hostileShots,this.effects])for(const s of group.getChildren() as AnySprite[]){if(!s.active)continue;const life=(s.getData('life') as number||0)+1;s.setData('life',life);
-   if(s===this.bullets.getChildren().find(q=>q===s)){if(life>55||s.x<0||s.x>WORLD)s.destroy();}
-   else if(s===this.grenades.getChildren().find(q=>q===s)){if(life>75){this.explode(s.x,s.y);s.destroy();}}
-   else if(group===this.hostileShots){if(life>110||s.x<0||s.x>WORLD)s.destroy();}
-   else if(life>22)s.destroy();
+ updateObjects(dt:number){
+  for(const group of [this.bullets,this.grenades,this.hostileShots,this.effects])for(const s of group.getChildren() as AnySprite[]){if(!s.active)continue;const life=(s.getData('life') as number||0)+dt;s.setData('life',life);
+   if(group===this.bullets){if(life>920||s.x<0||s.x>WORLD)s.destroy();}
+   else if(group===this.grenades){if(life>1250){this.explode(s.x,s.y);s.destroy();}}
+   else if(group===this.hostileShots){if(life>1840||s.x<0||s.x>WORLD)s.destroy();}
+   else if(life>370)s.destroy();
   }
  }
  explode(x:number,y:number){this.cameras.main.shake(180,.006);this.fx(x,y,'impact');AudioBus.play(95,.16,'sawtooth',.07);for(const e of this.hostiles.getChildren() as AnySprite[])if(e.active&&Phaser.Math.Distance.Between(x,y,e.x,e.y)<70)this.killEnemy(e);if(this.boss?.active&&Phaser.Math.Distance.Between(x,y,this.boss.x,this.boss.y)<95){this.bossHp-=3;this.updateBossHud();if(this.bossHp<=0){if(this.bossPhase===0){this.bossPhase=1;this.bossHp=30;this.banner('IT IS RISING AGAIN');this.boss.setTint(0x83a276);this.updateBossHud();}else this.win();}}}

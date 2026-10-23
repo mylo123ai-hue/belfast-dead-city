@@ -1,0 +1,187 @@
+{
+  "result": "PASS",
+  "browser": "Playwright Chromium headless",
+  "baselineCommit": "7506b604f3bcc64bf3168e870cd636e099d9dcd5",
+  "start": {
+    "x": 80,
+    "y": 210,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 0,
+    "elapsed": 0.2265133333333332,
+    "fps": 60
+  },
+  "acceleration": {
+    "x": 86.99659999999999,
+    "y": 210,
+    "vx": 119.90999999999985,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 0,
+    "elapsed": 0.3764133333333331,
+    "fps": 60
+  },
+  "run": {
+    "x": 150.8617666666667,
+    "y": 210,
+    "vx": 128,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 0,
+    "elapsed": 0.8757199999999994,
+    "fps": 55.5
+  },
+  "stopping": {
+    "x": 157.62799444444448,
+    "y": 210,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 0,
+    "elapsed": 1.042206666666666,
+    "fps": 55.5
+  },
+  "tapJump": {
+    "startY": 212,
+    "minY": 180.94444444444443,
+    "height": 31.05555555555557
+  },
+  "heldJump": {
+    "startY": 212,
+    "minY": 138.6222222222222,
+    "height": 73.3777777777778
+  },
+  "fpsRuns": [
+    {
+      "physicsFps": 30,
+      "renderFps": 37.4921875,
+      "simulatedSeconds": 1.805039999999992,
+      "distance": 229.63333333333344,
+      "averageSpeed": 127.21786405472147,
+      "physicsSteps": 54,
+      "endY": 210
+    },
+    {
+      "physicsFps": 120,
+      "renderFps": 39.40185546875,
+      "simulatedSeconds": 1.8299500000000033,
+      "distance": 234.66666666666586,
+      "averageSpeed": 128.2366549177111,
+      "physicsSteps": 220,
+      "endY": 210
+    }
+  ],
+  "fpsDistanceRatio": 0.9785511363636402,
+  "carLanding": {
+    "x": 548.2972416666667,
+    "y": 172,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 234,
+    "elapsed": 5.904406666666664,
+    "fps": 42.78558706087642
+  },
+  "carExit": {
+    "x": 660.2745583333328,
+    "y": 210,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 352,
+    "elapsed": 7.767656666666664,
+    "fps": 41.69189272174299
+  },
+  "shelterLanding": {
+    "x": 833.1461749999997,
+    "y": 170,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 512,
+    "elapsed": 8.735976666666659,
+    "fps": 38.51891954130724
+  },
+  "coyoteEdge": {
+    "x": 866.9186166666668,
+    "y": 170.1888888888889,
+    "elapsed": 10.687546666666668
+  },
+  "coyoteJump": {
+    "x": 879.7186166666668,
+    "y": 157.0222222222222,
+    "vy": -286.00000000000006,
+    "grounded": false
+  },
+  "bufferApproach": {
+    "x": 820,
+    "y": 165,
+    "vy": 80,
+    "grounded": false
+  },
+  "bufferedJump": {
+    "x": 828.7816833333331,
+    "y": 131.84444444444446,
+    "vx": 0,
+    "vy": -74.66666666666669,
+    "grounded": false,
+    "scrollX": 600,
+    "elapsed": 11.232506666666666,
+    "fps": 38.90641918148899
+  },
+  "shelterExit": {
+    "x": 908.2246083333326,
+    "y": 210,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 600,
+    "elapsed": 10.167566666666668,
+    "fps": 40.54189224198532
+  },
+  "camera": {
+    "x": 828.7816833333331,
+    "y": 128.7555555555556,
+    "vx": 0,
+    "vy": -29.333333333333343,
+    "grounded": false,
+    "scrollX": 600,
+    "elapsed": 11.297496666666666,
+    "fps": 38.90641918148899
+  },
+  "obstacle": {
+    "x": 1231.0666666666657,
+    "y": 184.46666666666667,
+    "minY": 157.38333333333335,
+    "vx": 91,
+    "vy": 124.66666666666664
+  },
+  "combat": {
+    "x": 1066.7353333333351,
+    "y": 162.3333333333334,
+    "bullets": 0,
+    "lastFire": 12847.476666666664,
+    "kills": 0
+  },
+  "projectileHit": {
+    "hp": 1,
+    "initialHp": 2,
+    "bullets": 0
+  },
+  "wallImpact": {
+    "lastFire": 13959.096666666666,
+    "activeBullets": 0
+  },
+  "sustainedContact": {
+    "firstContactHealth": 4,
+    "sustainedContactHealth": 4
+  },
+  "errors": [],
+  "screenshots": [
+    "artifacts/v6/car-roof.png",
+    "artifacts/v6/bus-shelter.png",
+    "artifacts/v6/collision-debug.png",
+    "artifacts/v6/collision-debug-shelter.png"
+  ]
+}
