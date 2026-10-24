@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import threeHouseFacades from './assets/v7-1-three-house-facades.png';
+import v72EastBelfastDusk from './assets/v7-2-east-belfast-dusk.png';
+import v72ResidentialGround from './assets/v7-2-residential-ground.png';
 
 /**
  * V7's environment-only residential benchmark. All street geometry lives in
@@ -19,37 +21,51 @@ export default class ResidentialScene extends Phaser.Scene {
   rng = 0xB31FA57;
   elapsed = 0;
   stageArtMode = false;
+  environmentArtMode = false;
 
   constructor() { super('ResidentialScene'); }
 
   preload() {
-    if (new URLSearchParams(location.search).get('benchmark') === 'v7.1')
+    const benchmark = new URLSearchParams(location.search).get('benchmark');
+    if (benchmark === 'v7.1' || benchmark === 'v7.2')
       this.load.image('v7.1-three-house-facades', threeHouseFacades);
+    if (benchmark === 'v7.2') {
+      this.load.image('v7.2-east-belfast-dusk', v72EastBelfastDusk);
+      this.load.image('v7.2-residential-ground', v72ResidentialGround);
+    }
   }
 
   create() {
     const world = ResidentialScene.WORLD_WIDTH;
     const w = ResidentialScene.VIEW_WIDTH;
     const h = ResidentialScene.VIEW_HEIGHT;
-    const v71Stage = new URLSearchParams(location.search).get('benchmark') === 'v7.1';
-    this.stageArtMode = v71Stage;
+    const benchmark = new URLSearchParams(location.search).get('benchmark');
+    const v71Stage = benchmark === 'v7.1';
+    const v72Stage = benchmark === 'v7.2';
+    this.stageArtMode = v71Stage || v72Stage;
+    this.environmentArtMode = v72Stage;
     this.physics.world.setBounds(0, 0, world, h);
     this.cameras.main.setBounds(0, 0, world, h);
 
     const skylineWidth = Math.ceil(world * 0.32 + w);
     const distant = this.textures.createCanvas('v7-distant-skyline', skylineWidth, 190)!;
-    drawDistantSkyline(distant.getContext(), skylineWidth, this.hash.bind(this));
+    const distantContext = distant.getContext();
+    drawDistantSkyline(distantContext, skylineWidth, this.hash.bind(this));
+    if (v72Stage) {
+      const skySource = this.textures.get('v7.2-east-belfast-dusk').getSourceImage() as CanvasImageSource;
+      composeV72ParallaxSky(distantContext, skySource);
+    }
     distant.refresh();
     this.add.image(0, 0, 'v7-distant-skyline').setOrigin(0).setDepth(-20).setScrollFactor(0.32, 0.2);
 
     const street = this.textures.createCanvas('v7-residential-panorama', world, h)!;
     const streetContext = street.getContext();
     drawResidentialPanorama(streetContext, world, this.hash.bind(this));
-    if (v71Stage) streetContext.clearRect(0, 0, 580, 205);
+    if (v71Stage || v72Stage) streetContext.clearRect(0, 0, 580, 205);
     street.refresh();
     this.add.image(0, 0, 'v7-residential-panorama').setOrigin(0).setDepth(-10);
 
-    if (v71Stage) {
+    if (v71Stage || v72Stage) {
       const facadeSource = this.textures.get('v7.1-three-house-facades').getSourceImage() as CanvasImageSource;
       const facade = this.textures.createCanvas('v7.1-facade-composite', 600, 146)!;
       const facadeContext = facade.getContext();
@@ -63,6 +79,8 @@ export default class ResidentialScene extends Phaser.Scene {
       this.add.image(0, 59, 'v7.1-facade-composite').setOrigin(0).setDepth(-9);
       this.drawThreeHouseFrontage();
     }
+
+    if (v72Stage) this.add.image(0, 205, 'v7.2-residential-ground').setOrigin(0).setDepth(0);
 
     this.createWalkerTextures();
 
@@ -240,6 +258,30 @@ function drawDistantSkyline(c: CanvasRenderingContext2D, width: number, hash: (n
     c.fillStyle = '#394a4f'; c.fillRect(x, 78, 2, 86); c.fillRect(x - 25, 79, 54, 2);
     c.fillRect(x + 21, 80, 2, 21); c.fillRect(x - 25, 80, 2, 21); c.fillRect(x - 29, 100, 8, 2);
   }
+}
+
+function composeV72ParallaxSky(c: CanvasRenderingContext2D, source: CanvasImageSource) {
+  // The original 1672x941 Belfast dusk painting is split into a cloud/horizon
+  // plate and a distant roof/crane silhouette at the existing 1x parallax
+  // pixel density. The silhouettes rise above the terrace roof line; the
+  // houses hide their lower edge so they remain a distant layer.
+  const overlay = document.createElement('canvas');
+  overlay.width = 600; overlay.height = 190;
+  const ctx = overlay.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(source, 0, 0, 1672, 720, 0, -235, 600, 330);
+  ctx.drawImage(source, 0, 660, 1672, 235, 0, 43, 600, 94);
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.fillStyle = 'rgba(48, 65, 78, 0.16)';
+  ctx.fillRect(0, 0, 600, 190);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation = 'destination-in';
+  const fade = ctx.createLinearGradient(580, 0, 600, 0);
+  fade.addColorStop(0, 'rgba(255,255,255,1)');
+  fade.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = fade; ctx.fillRect(0, 0, 600, 190);
+  ctx.globalCompositeOperation = 'source-over';
+  c.drawImage(overlay, 0, 0);
 }
 
 function drawResidentialPanorama(c: CanvasRenderingContext2D, width: number, hash: (n: number) => number) {

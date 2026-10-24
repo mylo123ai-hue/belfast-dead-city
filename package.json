@@ -11,11 +11,13 @@
     "test:browser": "npm run build && node tests/browser.smoke.mjs && node tests/benchmark.smoke.mjs && node tests/traversal.smoke.mjs && node tests/v5-benchmark.smoke.mjs",
     "test:v7": "npm run build && node tests/v7-residential.smoke.mjs",
     "test:v7-1": "npm run build && node tests/v7-1-stage.smoke.mjs",
+    "test:v7-2-p1": "npm run build && node tests/v7-2-p1.smoke.mjs",
     "record": "npm run build && node tests/record-gameplay.mjs",
     "record:benchmark": "npm run build && node tests/record-benchmark.mjs",
     "record:v5": "npm run build && node tests/record-v5-benchmark.mjs",
     "record:v7": "npm run build && node tests/record-v7-residential.mjs",
-    "record:v7-1": "npm run build && node tests/record-v7-1-stage.mjs"
+    "record:v7-1": "npm run build && node tests/record-v7-1-stage.mjs",
+    "record:v7-2-p1": "npm run build && node tests/record-v7-2-p1.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
