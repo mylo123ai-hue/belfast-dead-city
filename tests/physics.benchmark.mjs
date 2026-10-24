@@ -173,12 +173,14 @@ try {
   const enemy = await page.evaluate(() => {
     const g = window.__belfast.scene('Game'); g.hostiles.clear(true,true); g.spawnEnemy(1000, 'runner'); const e = g.hostiles.getChildren().find(x => x.active); e.setPosition(1120, 209); e.body.reset(e.x, e.y); e.__v6MinY=e.y; e.__v6Sample=()=>{e.__v6MinY=Math.min(e.__v6MinY,e.y);}; g.events.on('update',e.__v6Sample); g.player.setPosition(1500, 212); g.player.body.reset(1500, 212); return { x:e.x,y:e.y };
   });
-  await advance(1400);
+  try{await page.waitForFunction(()=>window.__belfast.scene('Game').hostiles.getChildren().some(e=>e.active&&e.x>1208),undefined,{timeout:12000});}catch{throw new Error(`Enemy did not clear the taxi within the traversal window: ${JSON.stringify(await page.evaluate(()=>{const g=window.__belfast.scene('Game'),e=g.hostiles.getChildren().find(x=>x.active);return{x:e?.x,y:e?.y,minY:e?.__v6MinY,vx:e?.body?.velocity.x,vy:e?.body?.velocity.y,elapsed:g.elapsed,fps:window.__belfast.fps()};}))}`);}
+  await advance(100);
   const obstacle = await page.evaluate(() => { const g = window.__belfast.scene('Game'); const e = g.hostiles.getChildren().find(x => x.active); g.events.off('update',e.__v6Sample); return { x:e?.x, y:e?.y, minY:e?.__v6MinY, vx:e?.body?.velocity.x, vy:e?.body?.velocity.y }; });
   assert(obstacle.x > 1208 && obstacle.minY < 205, 'Enemy failed to jump onto and traverse the car obstacle', { enemy, obstacle });
 
   const shelterEnemy=await page.evaluate(()=>{const g=window.__belfast.scene('Game');g.hostiles.clear(true,true);g.spawned=new Set([0,1]);g.player.setPosition(1200,210);g.player.body.reset(1200,210);g.spawnEnemy(750,'runner');const e=g.hostiles.getChildren().find(x=>x.active);e.setPosition(750,209);e.body.reset(e.x,e.y);e.__v6MinY=e.y;e.__v6Sample=()=>{e.__v6MinY=Math.min(e.__v6MinY,e.y)};g.events.on('update',e.__v6Sample);return{x:e.x,y:e.y};});
-  await advance(1800);
+  try{await page.waitForFunction(()=>window.__belfast.scene('Game').hostiles.getChildren().some(e=>e.active&&e.x>880),undefined,{timeout:12000});}catch{throw new Error(`Enemy did not clear the bus shelter within the traversal window: ${JSON.stringify(await page.evaluate(()=>{const g=window.__belfast.scene('Game'),e=g.hostiles.getChildren().find(x=>x.active);return{x:e?.x,y:e?.y,minY:e?.__v6MinY,vx:e?.body?.velocity.x,vy:e?.body?.velocity.y,elapsed:g.elapsed,fps:window.__belfast.fps()};}))}`);}
+  await advance(100);
   const shelterObstacle=await page.evaluate(()=>{const g=window.__belfast.scene('Game'),e=g.hostiles.getChildren().find(x=>x.active);g.events.off('update',e.__v6Sample);return{x:e?.x,y:e?.y,minY:e?.__v6MinY,vy:e?.body?.velocity.y};});
   assert(shelterObstacle.x>880&&shelterObstacle.minY<180,'Enemy failed to clear the bus shelter obstacle',{shelterEnemy,shelterObstacle});
 
