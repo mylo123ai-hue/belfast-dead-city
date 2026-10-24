@@ -9,157 +9,247 @@
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 0.2662733333333334,
+    "elapsed": 0.23306666666666653,
     "fps": 60
   },
   "acceleration": {
-    "x": 86.98970000000001,
+    "x": 82.4962,
     "y": 210,
-    "vx": 119.83200000000029,
+    "vx": 74.88599999999991,
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 0.3994200000000004,
-    "fps": 54.75
+    "elapsed": 0.3329133333333331,
+    "fps": 60
   },
   "run": {
-    "x": 148.7202333333334,
+    "x": 140.18570000000005,
     "y": 210,
     "vx": 128,
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 0.8822400000000008,
-    "fps": 54.75
+    "elapsed": 0.7989466666666657,
+    "fps": 56.25
   },
   "stopping": {
-    "x": 157.6172166666667,
+    "x": 146.9517666666667,
     "y": 210,
     "vx": 0,
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 1.0320933333333344,
-    "fps": 54.75
+    "elapsed": 0.9654266666666651,
+    "fps": 56.25
   },
   "reversal": {
-    "x": 176.8730444444444,
+    "x": 171.53502222222215,
     "y": 210,
-    "vx": -128,
+    "vx": -122.36416666666655,
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 1.5481600000000022,
-    "fps": 54.0625
+    "elapsed": 1.4480399999999982,
+    "fps": 56.25
   },
   "tapJump": {
     "startY": 212,
-    "minY": 176.55555555555554,
-    "height": 35.44444444444446
+    "minY": 180.94444444444443,
+    "height": 31.05555555555557
   },
   "heldJump": {
     "startY": 212,
-    "minY": 140.74444444444444,
-    "height": 71.25555555555556
+    "minY": 138.62222222222223,
+    "height": 73.37777777777777
   },
   "firstAirborneJump": {
     "x": 230,
-    "y": 139.46666666666667,
+    "y": 140.45555555555555,
     "vx": 0,
-    "vy": -59.33333333333335,
+    "vy": -70.66666666666669,
     "grounded": false,
     "scrollX": 0,
-    "elapsed": 4.017616666666675,
-    "fps": 51.22265625
+    "elapsed": 4.412386666666656,
+    "fps": 56.4345703125
   },
   "doubleJumpAttempt": {
     "x": 230,
-    "y": 137.5,
+    "y": 137.40000000000003,
     "vx": 0,
-    "vy": 8.666666666666659,
+    "vy": -14.000000000000009,
     "grounded": false,
     "scrollX": 0,
-    "elapsed": 4.132606666666676,
-    "fps": 51.6669921875
+    "elapsed": 4.487376666666656,
+    "fps": 56.4345703125
   },
   "fpsRuns": [
     {
       "physicsFps": 30,
-      "renderFps": 49.75018310546875,
+      "renderFps": 57.30694580078125,
       "simulatedSeconds": 1.8,
-      "distance": 226.13333333333344,
-      "averageSpeed": 125.62962962962969,
+      "distance": 226.13333333333338,
+      "averageSpeed": 125.62962962962965,
       "physicsSteps": 54,
       "endY": 210
     },
     {
       "physicsFps": 120,
-      "renderFps": 49.29697799682617,
+      "renderFps": 55.98515701293945,
       "simulatedSeconds": 1.8,
-      "distance": 229.33333333333255,
-      "averageSpeed": 127.40740740740696,
+      "distance": 228.26666666666586,
+      "averageSpeed": 126.81481481481435,
       "physicsSteps": 216,
       "endY": 210
     }
   ],
-  "fpsDistanceRatio": 0.9860465116279108,
+  "fpsDistanceRatio": 0.9906542056074804,
   "jumpRateRuns": [
     {
       "physicsFps": 30,
       "height": 70,
-      "airtime": 0.9099400000000042,
-      "start": 9.152446666666652,
-      "landed": 10.062386666666656
+      "airtime": 0.8999899999999936,
+      "start": 9.39550666666666,
+      "landed": 10.295496666666654
     },
     {
       "physicsFps": 120,
-      "height": 73.96666666666664,
-      "airtime": 0.9132700000000078,
-      "start": 10.157386666666655,
-      "landed": 11.070656666666663
+      "height": 73.96666666666667,
+      "airtime": 0.9165900000000011,
+      "start": 10.330506666666654,
+      "landed": 11.247096666666655
     }
   ],
-  "jumpHeightRatio": 0.9463722397476344,
+  "jumpHeightRatio": 0.9463722397476341,
+  "enemyRateRuns": [
+    {
+      "physicsFps": 30,
+      "simulatedSeconds": 1.8,
+      "distance": 160.76666666666506,
+      "averageSpeed": 89.31481481481391,
+      "physicsSteps": 54
+    },
+    {
+      "physicsFps": 120,
+      "simulatedSeconds": 1.8,
+      "distance": 161.5250000000226,
+      "averageSpeed": 89.73611111112366,
+      "physicsSteps": 216
+    }
+  ],
+  "enemySpeedRatio": 0.9953051643190995,
+  "platformRateRuns": [
+    {
+      "physicsFps": 30,
+      "platform": "car",
+      "x": 544,
+      "y": 172,
+      "grounded": true
+    },
+    {
+      "physicsFps": 30,
+      "platform": "shelter",
+      "x": 820,
+      "y": 170,
+      "grounded": true
+    },
+    {
+      "physicsFps": 120,
+      "platform": "car",
+      "x": 544,
+      "y": 172,
+      "grounded": true
+    },
+    {
+      "physicsFps": 120,
+      "platform": "shelter",
+      "x": 820,
+      "y": 170,
+      "grounded": true
+    }
+  ],
+  "cameraRateRuns": [
+    {
+      "physicsFps": 30,
+      "physicsSteps": 54,
+      "distance": 215.19919999999934,
+      "scrollDistance": 132,
+      "visibleX": 323.19919999999934
+    },
+    {
+      "physicsFps": 120,
+      "physicsSteps": 216,
+      "distance": 214.94204166665486,
+      "scrollDistance": 130,
+      "visibleX": 324.94204166665486
+    }
+  ],
+  "projectileRateRuns": [
+    {
+      "physicsFps": 30,
+      "lastFire": 21995.00666666653,
+      "activeBullets": 0
+    },
+    {
+      "physicsFps": 120,
+      "lastFire": 22414.97666666653,
+      "activeBullets": 0
+    }
+  ],
+  "grenadeFuseRateRuns": [
+    {
+      "physicsFps": 30,
+      "fuseSeconds": 1.2549300000000372
+    },
+    {
+      "physicsFps": 120,
+      "fuseSeconds": 1.2665899999999795
+    }
+  ],
   "carLanding": {
-    "x": 548.4620749999997,
+    "x": 546.7508083333332,
     "y": 172,
     "vx": 0,
     "vy": 0,
     "grounded": true,
-    "scrollX": 234,
-    "elapsed": 12.063986666666647,
-    "fps": 46.75028759241104
+    "scrollX": 347,
+    "elapsed": 26.264866666666546,
+    "fps": 54.57154773625264
   },
   "carExit": {
-    "x": 649.4286499999994,
+    "x": 647.0535083333328,
     "y": 210,
     "vx": 0,
     "vy": 0,
     "grounded": true,
-    "scrollX": 338,
-    "elapsed": 13.375586666666642,
-    "fps": 46.85953677073121
+    "scrollX": 347,
+    "elapsed": 27.463126666666568,
+    "fps": 54.42866080218948
   },
   "shelterLanding": {
-    "x": 820.7526166666668,
+    "x": 817.8404333333332,
     "y": 170,
     "vx": 0,
     "vy": 0,
     "grounded": true,
     "scrollX": 509,
-    "elapsed": 14.348856666666647,
-    "fps": 45.89465257804841
+    "elapsed": 28.43974666666657,
+    "fps": 55.07149560164211
   },
   "coyoteEdge": {
-    "x": 863.0239500000001,
+    "x": 863.5990499999999,
     "y": 170,
-    "elapsed": 16.15380666666664
+    "elapsed": 30.09633666666654
+  },
+  "coyotePreJump": {
+    "ageSeconds": 0.06669000000000835,
+    "grounded": false
   },
   "coyoteJump": {
-    "x": 875.8239500000001,
-    "y": 156.26666666666665,
+    "x": 880.6657166666665,
+    "y": 157.96666666666667,
     "vy": -286.00000000000006,
-    "grounded": false
+    "grounded": false,
+    "elapsed": 30.238036666666545
   },
   "bufferApproach": {
     "x": 820,
@@ -169,52 +259,67 @@
   },
   "bufferedJump": {
     "x": 820,
-    "y": 133.0888888888889,
+    "y": 141.29999999999998,
     "vx": 0,
     "vy": -86.00000000000001,
     "grounded": false,
-    "scrollX": 600,
-    "elapsed": 16.47880666666664,
-    "fps": 45.62824207515223
+    "scrollX": 598,
+    "elapsed": 30.41803666666655,
+    "fps": 54.10271627592369
   },
-  "shelterExit": {
-    "x": 908.3987916666666,
+  "expiredJumpBuffer": {
+    "x": 1500,
+    "y": 100,
+    "grounded": false
+  },
+  "expiredJumpBufferAfter": {
+    "x": 1500,
     "y": 210,
     "vx": 0,
     "vy": 0,
     "grounded": true,
-    "scrollX": 600,
-    "elapsed": 15.728836666666647,
-    "fps": 45.170989433536306
+    "scrollX": 1190,
+    "elapsed": 31.221336666666534,
+    "fps": 53.82703720694277
+  },
+  "shelterExit": {
+    "x": 906.8711333333329,
+    "y": 210,
+    "vx": 0,
+    "vy": 0,
+    "grounded": true,
+    "scrollX": 598,
+    "elapsed": 29.729716666666558,
+    "fps": 53.803621701231584
   },
   "camera": {
     "x": 820,
-    "y": 133.0888888888889,
+    "y": 141.29999999999998,
     "vx": 0,
     "vy": -86.00000000000001,
     "grounded": false,
-    "scrollX": 600,
-    "elapsed": 16.47880666666664,
-    "fps": 45.62824207515223
+    "scrollX": 598,
+    "elapsed": 30.41803666666655,
+    "fps": 54.10271627592369
   },
   "obstacle": {
-    "x": 1229.549999999999,
-    "y": 182.38888888888889,
+    "x": 1226.5166666666657,
+    "y": 178.8,
     "minY": 157.28888888888892,
     "vx": 91,
-    "vy": 113.33333333333331
+    "vy": 90.66666666666666
   },
   "shelterObstacle": {
-    "x": 890.2666666666655,
-    "y": 195.6888888888889,
+    "x": 894.8166666666655,
+    "y": 205.8888888888889,
     "minY": 155.28888888888892,
-    "vy": 181.33333333333334
+    "vy": 215.33333333333337
   },
   "combat": {
-    "x": 1070.9665166666687,
-    "y": 162.3333333333334,
+    "x": 1059.9089833333348,
+    "y": 149.3333333333334,
     "bullets": 0,
-    "lastFire": 19871.996666666626,
+    "lastFire": 34566.176666666506,
     "kills": 0
   },
   "projectileHit": {
@@ -222,27 +327,40 @@
     "initialHp": 2,
     "bullets": 0
   },
-  "wallImpact": {
-    "lastFire": 20851.966666666627,
-    "activeBullets": 0
-  },
   "hostileWallImpact": {
     "active": 0,
     "x": null
   },
+  "hostileProjectileHit": {
+    "health": 4,
+    "projectiles": 0,
+    "playerActive": true,
+    "playerBodyEnabled": true
+  },
+  "fullGrenadePool": {
+    "ammo": 4,
+    "active": 5
+  },
+  "fullGrenadePoolAfter": {
+    "ammo": 4,
+    "active": 5,
+    "cooldownUnchanged": true
+  },
   "grenadeBounce": {
-    "x": 1327.3333333333296,
-    "y": 221,
-    "vy": -162.4333333333334,
-    "life": 824.9799999999999,
+    "x": 1329.6666666666629,
+    "y": 218.48166666666665,
+    "vy": -151.10000000000005,
+    "life": 849.9500000000006,
     "active": 1,
     "ammo": 3,
     "bounced": true,
-    "elapsed": 22.561886666666613
+    "elapsed": 38.96257666666657
   },
   "grenadeFuse": {
     "active": 0,
-    "elapsed": 23.25687666666663
+    "elapsed": 39.67256666666659,
+    "kills": 1,
+    "hostiles": 0
   },
   "stressStart": {
     "hostiles": 18,
@@ -251,11 +369,36 @@
     "grenades": 5
   },
   "stressAfter": {
-    "hostiles": 9,
+    "hostiles": 11,
     "bullets": 0,
     "hostileShots": 0,
     "grenades": 0,
-    "fps": 45.977918949204614
+    "fps": 47.03513404849316
+  },
+  "bossStart": {
+    "x": 4320,
+    "y": 181.56666666666666,
+    "hp": 46
+  },
+  "bossMovement": {
+    "x": 4304.5,
+    "y": 184.29999999999998,
+    "vy": 0,
+    "grounded": true
+  },
+  "bossProjectileHit": {
+    "bossHp": 45,
+    "bossActive": true,
+    "bossBodyEnabled": true,
+    "bullets": 0
+  },
+  "bossStrike": {
+    "health": 4,
+    "bossHp": 45,
+    "active": true,
+    "phase": 0,
+    "x": 4320,
+    "y": 184.3
   },
   "leftBound": {
     "x": 6,
@@ -264,8 +407,8 @@
     "vy": 0,
     "grounded": true,
     "scrollX": 0,
-    "elapsed": 25.718426666666616,
-    "fps": 45.98343921190346
+    "elapsed": 46.063976666666676,
+    "fps": 52.61185309939828
   },
   "rightBound": {
     "x": 4974,
@@ -273,12 +416,16 @@
     "vx": 0,
     "vy": 0,
     "grounded": true,
-    "scrollX": 4467,
-    "elapsed": 26.713356666666602,
-    "fps": 24.821138417521773
+    "scrollX": 4500,
+    "elapsed": 48.41220666666671,
+    "fps": 52.34416736841153
   },
   "sustainedContact": {
     "firstContactHealth": 4,
+    "contactKnockback": {
+      "vx": -145,
+      "vy": -105
+    },
     "sustainedContactHealth": 4,
     "recontactHealth": 3
   },

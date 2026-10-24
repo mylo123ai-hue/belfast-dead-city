@@ -71,12 +71,13 @@ try {
     for (const x of [1500, 3100, 4010]) { g.player.setX(x); g.waveCheck(x); }
     const sections = g.sectionAt(4000) + ' / ' + g.sectionAt(3200) + ' / ' + g.sectionAt(200);
     const bossCreated = !!g.boss;
+    const hitBossForSmoke=()=>{const bullet=g.bullets.get(g.boss.x,g.boss.y,'bullet');if(!bullet?.body)return false;bullet.setActive(true).setVisible(true);bullet.body.reset(g.boss.x,g.boss.y);g.hitBoss(bullet,g.boss);return true;};
     g.bossHp = 1;
-    g.hitBoss({ active: true, destroy() {} }, {});
-    const phaseTwo = g.bossPhase === 1 && g.bossHp === 30;
+    const firstHit=hitBossForSmoke();
+    const phaseTwo = firstHit&&g.bossPhase === 1 && g.bossHp === 30;
     g.bossHp = 1;
-    g.hitBoss({ active: true, destroy() {} }, {});
-    return { sections, bossCreated, phaseTwo, victory: g.complete };
+    const secondHit=hitBossForSmoke();
+    return { sections, bossCreated, phaseTwo, victory: secondHit&&g.complete };
   });
   if (!flow.bossCreated || !flow.phaseTwo || !flow.victory) throw new Error(`Finale state flow failed: ${JSON.stringify(flow)}`);
   await page.waitForTimeout(850);
