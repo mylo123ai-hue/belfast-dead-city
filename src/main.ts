@@ -41,6 +41,7 @@ import platformTaxi from './assets/platform-taxi.png';
 import platformShelter from './assets/platform-shelter.png';
 import platformWall from './assets/platform-wall.png';
 import wetAsphaltArt from './assets/belfast-wet-asphalt.png';
+import ResidentialScene from './ResidentialScene';
 
 const W=480,H=270, WORLD=4980, FLOOR=225;
 const RESIDENTIAL_END=1450;
@@ -126,7 +127,7 @@ class Boot extends Phaser.Scene {
   canvasTex(s,'street-surface',WORLD,59,c=>drawStreetSurface(c,wetAsphalt));
   composeBackdrop(s);
   const benchmark=new URLSearchParams(location.search).get('benchmark');
-  this.scene.start(benchmark==='v5'?'Game':benchmark?'Benchmark':'Title');
+  this.scene.start(benchmark==='v5'?'Game':benchmark==='v7'?'ResidentialScene':benchmark?'Benchmark':'Title');
  }
 }
 function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSource){
@@ -573,7 +574,7 @@ class Game extends Phaser.Scene {
  ambientFx(){if(this.health<=0||this.complete)return;const cx=this.cameras.main.scrollX,x=cx+12+this.rand()*(W-24);const drop=this.add.rectangle(x,178+this.rand()*32,1,6+this.rand()*8,0xbec6b0,.2).setDepth(13).setAngle(-.16);this.tweens.add({targets:drop,x:x+4,y:drop.y+23,alpha:0,duration:470,onComplete:()=>drop.destroy()});if(this.rand()<.34){const ripple=this.add.rectangle(x,FLOOR-2,3,1,0xa6b8a6,.28).setDepth(3);this.tweens.add({targets:ripple,scaleX:3,alpha:0,duration:290,onComplete:()=>ripple.destroy()});}}
 }
 
-const game=new Phaser.Game({type:Phaser.CANVAS,width:W,height:H,parent:'game',backgroundColor:'#101719',pixelArt:true,antialias:false,roundPixels:true,physics:{default:'arcade',arcade:{gravity:{x:0,y:0},debug:false}},scene:[Boot,Title,Game,BenchmarkScene],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},render:{pixelArt:true,antialias:false,roundPixels:true}});
+const game=new Phaser.Game({type:Phaser.CANVAS,width:W,height:H,parent:'game',backgroundColor:'#101719',pixelArt:true,antialias:false,roundPixels:true,physics:{default:'arcade',arcade:{gravity:{x:0,y:0},debug:false}},scene:[Boot,Title,Game,BenchmarkScene,ResidentialScene],scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},render:{pixelArt:true,antialias:false,roundPixels:true}});
 if (new URLSearchParams(location.search).has('test')) {
   Object.defineProperty(window, '__belfast', { value: { scene: (key: string) => game.scene.getScene(key), fps: () => game.loop.actualFps }, configurable: true });
 }

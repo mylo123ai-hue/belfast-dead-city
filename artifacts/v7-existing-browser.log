@@ -1,0 +1,522 @@
+
+> belfast-dead-city@1.0.0 test:browser
+> npm run build && node tests/browser.smoke.mjs && node tests/benchmark.smoke.mjs && node tests/traversal.smoke.mjs && node tests/v5-benchmark.smoke.mjs
+
+
+> belfast-dead-city@1.0.0 build
+> tsc -b && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 50 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                   0.74 kB │ gzip:   0.46 kB
+dist/assets/player-5-Ceu-Srxq.png                 4.14 kB
+dist/assets/zombie-3-WyMqFBfx.png                 4.15 kB
+dist/assets/explosion-6-rH_STBAK.png              4.18 kB
+dist/assets/player-6-BkdDNsmE.png                 4.20 kB
+dist/assets/explosion-3-DPUpQerS.png              4.30 kB
+dist/assets/zombie-2-DRMp1wIG.png                 4.44 kB
+dist/assets/zombie-1-mYDQG-6p.png                 4.47 kB
+dist/assets/explosion-4-7F9pAlsT.png              5.25 kB
+dist/assets/platform-wall-DtkC1Op5.png            7.67 kB
+dist/assets/platform-taxi-CCIyaHr0.png           11.31 kB
+dist/assets/platform-shelter-D9fjI8E2.png        11.56 kB
+dist/assets/boss-2-7aCq_igU.png                  22.48 kB
+dist/assets/boss-1-DbqwDMv0.png                  22.56 kB
+dist/assets/boss-0-Dn0nti61.png                  22.60 kB
+dist/assets/boss-3-YGUz9yzN.png                  25.22 kB
+dist/assets/benchmark-street-Cd7nLl-E.png       228.46 kB
+dist/assets/belfast-wet-asphalt-hAkgNP_J.png    250.77 kB
+dist/assets/city-centre-west-BdZ1vk3X.png       259.51 kB
+dist/assets/city-hall-west-DCajw_Eh.png         264.97 kB
+dist/assets/street-west-CRlfAJXO.png            269.74 kB
+dist/assets/street-east-Dj3N-_1Z.png            274.11 kB
+dist/assets/city-centre-east-B0FkhIQC.png       287.18 kB
+dist/assets/city-hall-arcade-Dc4Z1C8G.png       288.17 kB
+dist/assets/city-centre-arcade-DTmT2Vza.png     308.41 kB
+dist/assets/index-BOHANxRw.css                    0.93 kB │ gzip:   0.57 kB
+dist/assets/index-B9fsBPdP.js                 1,350.58 kB │ gzip: 409.80 kB
+✓ built in 4.25s
+{
+  "initialX": 80,
+  "movedX": 142.83333333333348,
+  "measuredFps": 55.6875,
+  "environmentGeometry": {
+    "roadWidth": 4980,
+    "asphaltWidth": 4980,
+    "asphaltHeight": 45,
+    "backdropWidth": 4980,
+    "backdropSamples": [
+      [
+        0,
+        168,
+        93,
+        33,
+        255
+      ],
+      [
+        240,
+        75,
+        24,
+        21,
+        255
+      ],
+      [
+        479,
+        2,
+        1,
+        3,
+        255
+      ],
+      [
+        480,
+        0,
+        0,
+        0,
+        5
+      ],
+      [
+        500,
+        50,
+        38,
+        7,
+        187
+      ],
+      [
+        508,
+        123,
+        76,
+        60,
+        255
+      ],
+      [
+        959,
+        11,
+        31,
+        35,
+        255
+      ],
+      [
+        960,
+        102,
+        0,
+        0,
+        5
+      ],
+      [
+        1450,
+        8,
+        24,
+        19,
+        96
+      ],
+      [
+        2400,
+        0,
+        0,
+        0,
+        5
+      ],
+      [
+        3000,
+        0,
+        3,
+        3,
+        255
+      ],
+      [
+        3500,
+        0,
+        1,
+        1,
+        255
+      ],
+      [
+        4000,
+        102,
+        51,
+        0,
+        5
+      ],
+      [
+        4480,
+        102,
+        51,
+        0,
+        5
+      ],
+      [
+        4979,
+        111,
+        33,
+        17,
+        255
+      ]
+    ],
+    "backdropPanelAlpha": [
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "platforms": [
+      {
+        "key": "platform-taxi",
+        "x": 361,
+        "top": 185,
+        "artworkTop": 185,
+        "width": 62,
+        "roofAnchor": {
+          "centerOffsetX": -4,
+          "topOffsetY": -11,
+          "width": 62,
+          "worldX": 361,
+          "worldY": 185
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      },
+      {
+        "key": "platform-wall",
+        "x": 805,
+        "top": 181,
+        "artworkTop": 181,
+        "width": 86,
+        "roofAnchor": {
+          "centerOffsetX": 0,
+          "topOffsetY": -22,
+          "width": 86,
+          "worldX": 805,
+          "worldY": 181
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      },
+      {
+        "key": "platform-shelter",
+        "x": 1210,
+        "top": 162,
+        "artworkTop": 162,
+        "width": 78,
+        "roofAnchor": {
+          "centerOffsetX": 0,
+          "topOffsetY": -31,
+          "width": 78,
+          "worldX": 1210,
+          "worldY": 162
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      },
+      {
+        "key": "platform-taxi",
+        "x": 1806,
+        "top": 185,
+        "artworkTop": 185,
+        "width": 62,
+        "roofAnchor": {
+          "centerOffsetX": -4,
+          "topOffsetY": -11,
+          "width": 62,
+          "worldX": 1806,
+          "worldY": 185
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      },
+      {
+        "key": "platform-wall",
+        "x": 2495,
+        "top": 181,
+        "artworkTop": 181,
+        "width": 86,
+        "roofAnchor": {
+          "centerOffsetX": 0,
+          "topOffsetY": -22,
+          "width": 86,
+          "worldX": 2495,
+          "worldY": 181
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      },
+      {
+        "key": "platform-taxi",
+        "x": 2906,
+        "top": 185,
+        "artworkTop": 185,
+        "width": 62,
+        "roofAnchor": {
+          "centerOffsetX": -4,
+          "topOffsetY": -11,
+          "width": 62,
+          "worldX": 2906,
+          "worldY": 185
+        },
+        "up": true,
+        "down": false,
+        "left": false,
+        "right": false
+      }
+    ]
+  },
+  "encounterPressure": {
+    "count": 21,
+    "types": [
+      "shambler",
+      "runner",
+      "spitter"
+    ],
+    "offscreenEnemyRecycled": true
+  },
+  "platformLanding": {
+    "x": 361,
+    "y": 163,
+    "top": 185,
+    "bottom": 185,
+    "grounded": true,
+    "platformCount": 6
+  },
+  "platformJump": {
+    "y": 95.56666666666663,
+    "rising": true,
+    "delta": 67.43333333333337
+  },
+  "platformReturn": {
+    "grounded": true,
+    "bottom": 185,
+    "top": 185
+  },
+  "undersidePass": {
+    "y": 152.49999999999997,
+    "bottom": 174.49999999999997,
+    "roof": 185,
+    "velocityY": -181.3333333333334
+  },
+  "elevatedEnemy": {
+    "climbAt": 5730.539999999996,
+    "y": 148.68888888888884,
+    "velocityY": -182.6666666666667
+  },
+  "jumpState": {
+    "velocity": -306.00000000000006,
+    "y": 147.13333333333333,
+    "blocked": false,
+    "touching": false,
+    "key": true
+  },
+  "combat": {
+    "grenades": 3,
+    "bossHp": 0
+  },
+  "acidCollision": {
+    "health": 3,
+    "playerBody": true,
+    "playerActive": true,
+    "projectileCount": 0
+  },
+  "flow": {
+    "sections": "CITY HALL / CITY HALL / RESIDENTIAL BELFAST",
+    "bossCreated": true,
+    "phaseTwo": true,
+    "victory": true
+  },
+  "gameOverAndRestart": {
+    "health": 0,
+    "state": "DOWN",
+    "bodyEnabled": false
+  },
+  "afterVictoryRestart": {
+    "x": 80,
+    "health": 5,
+    "complete": false,
+    "active": true
+  },
+  "afterDeathRestart": {
+    "x": 80,
+    "health": 5,
+    "complete": false
+  },
+  "browserErrors": [],
+  "screenshots": [
+    "artifacts/title-screen.png",
+    "artifacts/gameplay-screen.png",
+    "artifacts/v4-collision-debug.png",
+    "artifacts/v4-road-platforms.png",
+    "artifacts/city-hall-boss.png",
+    "artifacts/game-over-screen.png",
+    "artifacts/victory-screen.png"
+  ]
+}
+{
+  "baseline": {
+    "browser": "154.0.8037.57",
+    "mode": "headless Chromium / Linux cloud runner",
+    "viewport": "1200 x 760",
+    "sampledFps": 60
+  },
+  "initial": {
+    "x": 89,
+    "texture": "bench-player-0",
+    "activeEnemies": 2,
+    "types": [
+      "shambler",
+      "runner"
+    ],
+    "fps": 60
+  },
+  "moved": 137.33333333333348,
+  "bulletCount": 1,
+  "grenadeAndCombat": {
+    "grenades": 1,
+    "activeEnemies": 0,
+    "hp": 5,
+    "outcome": "clear",
+    "fps": 59.8125
+  },
+  "paused": true,
+  "resumed": true,
+  "browserErrors": [],
+  "screenshots": [
+    "artifacts/benchmark-street.png",
+    "artifacts/benchmark-combat.png"
+  ]
+}
+{
+  "browser": "154.0.8037.57",
+  "mode": "headless Chromium / Linux cloud runner",
+  "anchor": {
+    "x": 361,
+    "top": 185,
+    "left": 330,
+    "right": 392,
+    "roofAnchor": {
+      "centerOffsetX": -4,
+      "topOffsetY": -11,
+      "width": 62,
+      "worldX": 361,
+      "worldY": 185
+    },
+    "checks": {
+      "none": false,
+      "up": true,
+      "down": false,
+      "left": false,
+      "right": false
+    }
+  },
+  "approachX": 251.58333333333306,
+  "firstLanding": {
+    "x": 358.67775343009123,
+    "bottom": 185,
+    "roof": 185,
+    "grounded": true,
+    "velocityY": 0
+  },
+  "crossedRoof": {
+    "x": 386.35326000705265,
+    "bottom": 185,
+    "roof": 185,
+    "grounded": true,
+    "platform": [
+      330,
+      392
+    ]
+  },
+  "offRoad": {
+    "x": 250.73841529245118,
+    "bottom": 225,
+    "grounded": true
+  },
+  "secondLanding": {
+    "x": 355.2593291506229,
+    "bottom": 185,
+    "roof": 185,
+    "grounded": true,
+    "velocityY": 0
+  },
+  "browserErrors": [],
+  "screenshots": [
+    "artifacts/v5-traversal-roof-debug.png",
+    "artifacts/v5-traversal-road-debug.png"
+  ]
+}
+{
+  "start": {
+    "x": 80,
+    "world": 1450,
+    "camera": 1450,
+    "groundTop": 225,
+    "taxi": {
+      "x": 361,
+      "top": 185,
+      "left": 330,
+      "right": 392
+    },
+    "panorama": 4980,
+    "enemies": 0
+  },
+  "nearTaxi": {
+    "x": 232.2499999999998,
+    "scrollX": 0,
+    "section": "RESIDENTIAL BELFAST"
+  },
+  "end": {
+    "x": 1383.1646882616017,
+    "scrollX": 970,
+    "section": "RESIDENTIAL BELFAST",
+    "boundsRight": 1450,
+    "groundTop": 225,
+    "health": 5
+  },
+  "performance": {
+    "browser": "154.0.8037.57",
+    "mode": "headless Chromium / Linux cloud runner",
+    "viewport": "1200 x 760",
+    "fpsSamples": [
+      59.5,
+      59.6,
+      59.6,
+      60,
+      60,
+      60.2,
+      60.2,
+      60.2,
+      60.2,
+      60.4,
+      60.4,
+      60.3,
+      60.3,
+      60.5,
+      60.5
+    ],
+    "medianFps": 60.2,
+    "minFps": 59.5
+  },
+  "browserErrors": [],
+  "screenshots": [
+    "artifacts/v5-after-residential-road.png",
+    "artifacts/v5-after-taxi-scale.png",
+    "artifacts/v5-after-background-road-connection.png",
+    "artifacts/v5-after-junction-collision-debug.png"
+  ]
+}
