@@ -1,17 +1,10 @@
-import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
+import { preview } from 'vite';
 
-const server = spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', '4173'], { stdio: 'ignore' });
+const server = await preview({ preview: { host: '127.0.0.1', port: 4173, strictPort: true } });
 let browser;
 try {
-  let ready = false;
-  for (let i = 0; i < 60; i++) {
-    try { const response = await fetch('http://127.0.0.1:4173'); if (response.ok) { ready = true; break; } } catch {}
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  }
-  if (!ready) throw new Error('Vite preview did not become ready');
-
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1200, height: 760 } });
   const errors = [];
@@ -105,5 +98,5 @@ try {
   console.log(JSON.stringify({ initialX, movedX, measuredFps, jumpState, combat, flow, gameOverAndRestart: gameOver, afterVictoryRestart, afterDeathRestart, browserErrors: errors, screenshots: ['artifacts/title-screen.png', 'artifacts/gameplay-screen.png', 'artifacts/city-hall-boss.png', 'artifacts/game-over-screen.png', 'artifacts/victory-screen.png'] }, null, 2));
 } finally {
   await browser?.close();
-  server.kill('SIGTERM');
+  await new Promise((resolve, reject) => server.httpServer.close((error) => error ? reject(error) : resolve()));
 }
