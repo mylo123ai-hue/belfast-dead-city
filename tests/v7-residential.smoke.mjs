@@ -33,7 +33,7 @@ try {
       staticBodies: s.physics.world.staticBodies.entries.length,
       playerCount: s.children.list.filter(item => item.type === 'Sprite').length };
   });
-  if (start.world !== 14500 || start.camera !== 14500 || start.panorama !== 14500 || start.skyline !== 14500
+  if (start.world !== 14500 || start.camera !== 14500 || start.panorama !== 14500
       || start.x !== 78 || start.groundTop !== 225 || start.staticBodies !== 1
       || start.skyline !== Math.ceil(start.world * 0.32 + 480)) {
     throw new Error(`Residential scene contract failed: ${JSON.stringify(start)}`);

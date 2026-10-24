@@ -1,0 +1,16 @@
+{
+  "browser": "154.0.8037.57",
+  "viewport": "1200 x 760",
+  "route": {
+    "playerX": 698.6,
+    "cameraX": 376,
+    "world": 14500,
+    "groundTop": 225,
+    "staticBodies": 1,
+    "fps": 59.3
+  },
+  "browserErrors": [],
+  "resourceWarnings": [],
+  "video": "artifacts/v7-1-three-house-traversal.webm",
+  "recording": "single uninterrupted camera traversal through all three new facades"
+}

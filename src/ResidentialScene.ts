@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import threeHouseFacades from './assets/v7-1-three-house-facades.png';
 
 /**
  * V7's environment-only residential benchmark. All street geometry lives in
@@ -17,13 +18,21 @@ export default class ResidentialScene extends Phaser.Scene {
   rain: Phaser.GameObjects.Rectangle[] = [];
   rng = 0xB31FA57;
   elapsed = 0;
+  stageArtMode = false;
 
   constructor() { super('ResidentialScene'); }
+
+  preload() {
+    if (new URLSearchParams(location.search).get('benchmark') === 'v7.1')
+      this.load.image('v7.1-three-house-facades', threeHouseFacades);
+  }
 
   create() {
     const world = ResidentialScene.WORLD_WIDTH;
     const w = ResidentialScene.VIEW_WIDTH;
     const h = ResidentialScene.VIEW_HEIGHT;
+    const v71Stage = new URLSearchParams(location.search).get('benchmark') === 'v7.1';
+    this.stageArtMode = v71Stage;
     this.physics.world.setBounds(0, 0, world, h);
     this.cameras.main.setBounds(0, 0, world, h);
 
@@ -34,9 +43,26 @@ export default class ResidentialScene extends Phaser.Scene {
     this.add.image(0, 0, 'v7-distant-skyline').setOrigin(0).setDepth(-20).setScrollFactor(0.32, 0.2);
 
     const street = this.textures.createCanvas('v7-residential-panorama', world, h)!;
-    drawResidentialPanorama(street.getContext(), world, this.hash.bind(this));
+    const streetContext = street.getContext();
+    drawResidentialPanorama(streetContext, world, this.hash.bind(this));
+    if (v71Stage) streetContext.clearRect(0, 0, 580, 205);
     street.refresh();
     this.add.image(0, 0, 'v7-residential-panorama').setOrigin(0).setDepth(-10);
+
+    if (v71Stage) {
+      const facadeSource = this.textures.get('v7.1-three-house-facades').getSourceImage() as CanvasImageSource;
+      const facade = this.textures.createCanvas('v7.1-facade-composite', 600, 146)!;
+      const facadeContext = facade.getContext();
+      facadeContext.imageSmoothingEnabled = false;
+      facadeContext.drawImage(facadeSource, 0, 0, 600, 146);
+      facadeContext.globalCompositeOperation = 'destination-in';
+      const edgeFade = facadeContext.createLinearGradient(580, 0, 600, 0);
+      edgeFade.addColorStop(0, 'rgba(255,255,255,1)'); edgeFade.addColorStop(1, 'rgba(255,255,255,0)');
+      facadeContext.fillStyle = edgeFade; facadeContext.fillRect(0, 0, 600, 146);
+      facadeContext.globalCompositeOperation = 'source-over'; facade.refresh();
+      this.add.image(0, 59, 'v7.1-facade-composite').setOrigin(0).setDepth(-9);
+      this.drawThreeHouseFrontage();
+    }
 
     this.createWalkerTextures();
 
@@ -98,6 +124,26 @@ export default class ResidentialScene extends Phaser.Scene {
       this.add.rectangle(x, 169, 2, 77, 0x263235).setDepth(-7);
       this.add.rectangle(x - 7, 129, 15, 3, 0x263235).setDepth(-7);
       this.add.rectangle(x, 126, 7, 5, 0xd9bd85).setDepth(-6).setAlpha(0.8);
+    }
+  }
+
+  drawThreeHouseFrontage() {
+    const g = this.add.graphics().setDepth(1);
+    const houses = [
+      { left: 0, gateLeft: 157, gateRight: 193 },
+      { left: 200, gateLeft: 357, gateRight: 393 },
+      { left: 400, gateLeft: 538, gateRight: 574 },
+    ];
+    for (const house of houses) {
+      // Decorative low sandstone walls and open iron gates sit behind the walker.
+      g.fillStyle(0x555b55, 1); g.fillRect(house.left + 3, 199, house.gateLeft - house.left - 3, 6);
+      g.fillRect(house.gateRight, 199, Math.max(0, house.left + 199 - house.gateRight), 6);
+      g.fillStyle(0xc0ad89, 1); g.fillRect(house.left + 3, 198, house.gateLeft - house.left - 3, 2);
+      g.fillRect(house.gateRight, 198, Math.max(0, house.left + 199 - house.gateRight), 2);
+      g.fillStyle(0x303c3b, 1); g.fillRect(house.gateLeft, 200, 2, 5); g.fillRect(house.gateRight - 2, 200, 2, 5);
+      g.fillRect(house.gateLeft + 6, 200, 1, 5); g.fillRect(house.gateLeft + 13, 200, 1, 5);
+      g.fillRect(house.gateLeft + 20, 200, 1, 5); g.fillRect(house.gateLeft + 27, 200, 1, 5);
+      g.fillStyle(0x918775, 1); g.fillRect(house.left + 2, 204, 4, 1); g.fillRect(house.left + 195, 204, 4, 1);
     }
   }
 
