@@ -127,7 +127,7 @@ class Boot extends Phaser.Scene {
   canvasTex(s,'street-surface',WORLD,59,c=>drawStreetSurface(c,wetAsphalt));
   composeBackdrop(s);
   const benchmark=new URLSearchParams(location.search).get('benchmark');
-  this.scene.start(benchmark==='v5'?'Game':benchmark==='v7'||benchmark==='v7.1'?'ResidentialScene':benchmark?'Benchmark':'Title');
+  this.scene.start(benchmark==='v5'?'Game':benchmark==='v7'||benchmark==='v7.1'||benchmark==='v7.2'?'ResidentialScene':benchmark?'Benchmark':'Title');
  }
 }
 function drawStreetSurface(c:CanvasRenderingContext2D,wetAsphalt:CanvasImageSource){

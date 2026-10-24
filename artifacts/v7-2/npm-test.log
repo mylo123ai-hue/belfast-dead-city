@@ -1,0 +1,14 @@
+
+> belfast-dead-city@1.0.0 test
+> node --test
+
+✔ project keeps static browser build and Pages relative paths (4.494323ms)
+✔ game provides the requested controls, sections, and enemy roster (1.88884ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 79.236474

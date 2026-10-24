@@ -1,0 +1,16 @@
+{
+  "browser": "154.0.8037.57",
+  "viewport": "1200 x 760",
+  "route": {
+    "playerX": 716,
+    "cameraX": 393,
+    "worldWidth": 14500,
+    "groundTop": 225,
+    "staticBodies": 1,
+    "fps": 58.6
+  },
+  "browserErrors": [],
+  "resourceWarnings": [],
+  "video": "artifacts/v7-2/v7-2-three-house-traversal.webm",
+  "recording": "single uninterrupted recording from X=78 through all three houses and the visible X≈600 art boundary"
+}

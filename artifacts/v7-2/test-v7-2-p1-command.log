@@ -1,0 +1,151 @@
+
+> belfast-dead-city@1.0.0 test:v7-2-p1
+> npm run build && node tests/v7-2-p1.smoke.mjs
+
+
+> belfast-dead-city@1.0.0 build
+> tsc -b && vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 53 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                        0.74 kB │ gzip:   0.46 kB
+dist/assets/player-5-Ceu-Srxq.png                      4.14 kB
+dist/assets/zombie-3-WyMqFBfx.png                      4.15 kB
+dist/assets/explosion-6-rH_STBAK.png                   4.18 kB
+dist/assets/player-6-BkdDNsmE.png                      4.20 kB
+dist/assets/explosion-3-DPUpQerS.png                   4.30 kB
+dist/assets/zombie-2-DRMp1wIG.png                      4.44 kB
+dist/assets/zombie-1-mYDQG-6p.png                      4.47 kB
+dist/assets/explosion-4-7F9pAlsT.png                   5.25 kB
+dist/assets/v7-2-residential-ground-COerEfzR.png       5.74 kB
+dist/assets/platform-wall-DtkC1Op5.png                 7.67 kB
+dist/assets/platform-taxi-CCIyaHr0.png                11.31 kB
+dist/assets/platform-shelter-D9fjI8E2.png             11.56 kB
+dist/assets/boss-2-7aCq_igU.png                       22.48 kB
+dist/assets/boss-1-DbqwDMv0.png                       22.56 kB
+dist/assets/boss-0-Dn0nti61.png                       22.60 kB
+dist/assets/boss-3-YGUz9yzN.png                       25.22 kB
+dist/assets/benchmark-street-Cd7nLl-E.png            228.46 kB
+dist/assets/belfast-wet-asphalt-hAkgNP_J.png         250.77 kB
+dist/assets/city-centre-west-BdZ1vk3X.png            259.51 kB
+dist/assets/city-hall-west-DCajw_Eh.png              264.97 kB
+dist/assets/street-west-CRlfAJXO.png                 269.74 kB
+dist/assets/street-east-Dj3N-_1Z.png                 274.11 kB
+dist/assets/city-centre-east-B0FkhIQC.png            287.18 kB
+dist/assets/city-hall-arcade-Dc4Z1C8G.png            288.17 kB
+dist/assets/city-centre-arcade-DTmT2Vza.png          308.41 kB
+dist/assets/v7-2-east-belfast-dusk-Dgs5HGMr.png    1,858.24 kB
+dist/assets/v7-1-three-house-facades-Cp-sk0H4.png  2,421.31 kB
+dist/assets/index-BOHANxRw.css                         0.93 kB │ gzip:   0.57 kB
+dist/assets/index-BIDrbs7j.js                      1,354.69 kB │ gzip: 411.18 kB
+✓ built in 4.30s
+{
+  "browser": "154.0.8037.57",
+  "viewport": "1200 x 760",
+  "canvas": "480 x 270 native Phaser canvas",
+  "baseline": {
+    "path": "artifacts/v7-2/v7-2-before-native.png",
+    "width": 480,
+    "height": 270,
+    "playerX": 78,
+    "cameraX": 0
+  },
+  "stage": {
+    "path": "artifacts/v7-2/v7-2-after-native.png",
+    "width": 480,
+    "height": 270,
+    "playerX": 78,
+    "cameraX": 0,
+    "environmentArtMode": true,
+    "worldWidth": 14500,
+    "cameraWidth": 14500,
+    "playerTexture": "v7-walker-0",
+    "playerBodyHeight": 30,
+    "bodyBottom": 225,
+    "groundTop": 225,
+    "staticBodies": 1,
+    "groundArt": {
+      "width": 600,
+      "height": 65,
+      "redKerb": [
+        142,
+        67,
+        58
+      ],
+      "whiteKerb": [
+        169,
+        157,
+        135
+      ],
+      "blueKerb": [
+        73,
+        91,
+        107
+      ]
+    },
+    "parallax": {
+      "skylineX": 0.32,
+      "skylineY": 0.2,
+      "groundX": 1,
+      "groundY": 1
+    },
+    "facadeLoaded": true,
+    "skyLoaded": true
+  },
+  "skyAndCranes": {
+    "path": "artifacts/v7-2/v7-2-sky-cranes-native.png",
+    "width": 480,
+    "height": 270,
+    "playerX": 78,
+    "cameraX": 0,
+    "cameraZoom": 1.15
+  },
+  "detail": {
+    "path": "artifacts/v7-2/v7-2-pavement-road-detail-native.png",
+    "width": 480,
+    "height": 270,
+    "playerX": 78,
+    "cameraX": 70,
+    "cameraZoom": 1.8
+  },
+  "scrollEnd": {
+    "path": "artifacts/v7-2/v7-2-scroll-end-native.png",
+    "width": 480,
+    "height": 270,
+    "playerX": 706.3,
+    "cameraX": 384
+  },
+  "traversal": {
+    "playerX": 706.3,
+    "cameraX": 384,
+    "worldWidth": 14500,
+    "groundTop": 225,
+    "staticBodies": 1,
+    "fps": 59.9
+  },
+  "fps": {
+    "method": "window.__belfast.fps() sampled every 500 ms while walking from X=78 through the three-house gate",
+    "samples": [
+      58.5,
+      58.5,
+      59.1,
+      59.1,
+      59.3,
+      59.3,
+      59.5,
+      59.5
+    ],
+    "median": 59.3,
+    "min": 58.5,
+    "max": 59.5
+  },
+  "normalMode": {
+    "title": true,
+    "residential": false
+  },
+  "browserErrors": [],
+  "resourceWarnings": []
+}
